@@ -12,6 +12,7 @@ export interface TradeLogEntry {
   direction: Direction
   entryPrice: number
   stopLoss: number
+  leverage: number
   riskMode: RiskMode
   riskValue: number
   riskAmount: number
@@ -27,6 +28,7 @@ export interface TradeLogEntry {
 interface PersistedState {
   symbol: string
   accountBalance: number
+  leverage: number
   riskMode: RiskMode
   riskValue: number
   direction: Direction
@@ -47,6 +49,7 @@ export const useTradeguardStore = defineStore("tradeguard", {
     entryPrice: 80000,
     stopLoss: 75000,
     accountBalance: 1000,
+    leverage: 1,
     riskMode: "fixed" as RiskMode,
     riskValue: 5,
     direction: "long" as Direction,
@@ -71,12 +74,20 @@ export const useTradeguardStore = defineStore("tradeguard", {
         || Number(this.riskValue) <= 0
         || this.riskPerUnit === 0
     },
+    hasInsufficientMargin(): boolean {
+      if (this.hasInvalidInputs) return false
+      return this.marginRequiredUSDT > Number(this.accountBalance)
+    },
     quantityToBuy(): number {
       if (this.hasInvalidInputs) return 0
       return this.riskAmount / this.riskPerUnit
     },
     totalCostUSDT(): number {
       return this.quantityToBuy * Number(this.entryPrice)
+    },
+    marginRequiredUSDT(): number {
+      const lev = Number(this.leverage) || 1
+      return this.totalCostUSDT / lev
     },
     targets(): { multiple: number, price: number }[] {
       return this.targetRatios.map((n) => {
@@ -154,11 +165,13 @@ export const useTradeguardStore = defineStore("tradeguard", {
       const entryRegex = /(?:entry|entries|buy(?:\s+zone)?|at|price)\s*[:=\s]*\$?\s*([\d.]+)/i
       const slRegex = /(?:sl|stop(?:\s|-)?loss|stop)\s*[:=\s]*\$?\s*([\d.]+)/i
       const targetsRegex = /(?:tp|take\s*profit|target|targets?)\s*[:=\s]*([^\n]+)/i
+      const levRegex = /(?:lev|leverage|cross|isolated)\s*[:=\s]*([0-9]+)\s*x?/i
 
       const rangeMatch = text.match(entryRangeRegex)
       const entryMatch = text.match(entryRegex)
       const slMatch = text.match(slRegex)
       const targetsMatch = text.match(targetsRegex)
+      const levMatch = text.match(levRegex) || text.match(/([0-9]+)\s*x/i)
 
       let changes = 0
 
@@ -182,6 +195,14 @@ export const useTradeguardStore = defineStore("tradeguard", {
         const parsedSl = Number(slMatch[1])
         if (!Number.isNaN(parsedSl)) {
           this.stopLoss = parsedSl
+          changes++
+        }
+      }
+
+      if (levMatch?.[1]) {
+        const parsedLev = Number(levMatch[1])
+        if (!Number.isNaN(parsedLev) && parsedLev > 0 && parsedLev <= 100) {
+          this.leverage = parsedLev
           changes++
         }
       }
@@ -211,6 +232,10 @@ export const useTradeguardStore = defineStore("tradeguard", {
         this.parserMessage = "Cannot log trade: fix invalid calculator inputs first."
         return
       }
+      if (this.hasInsufficientMargin) {
+        this.parserMessage = "Cannot log trade: insufficient margin."
+        return
+      }
 
       const entry: TradeLogEntry = {
         id: Date.now(),
@@ -219,6 +244,7 @@ export const useTradeguardStore = defineStore("tradeguard", {
         direction: this.direction,
         entryPrice: toFixedNumber(Number(this.entryPrice)),
         stopLoss: toFixedNumber(Number(this.stopLoss)),
+        leverage: Number(this.leverage),
         riskMode: this.riskMode,
         riskValue: Number(this.riskValue),
         riskAmount: toFixedNumber(this.riskAmount, 4),
@@ -260,6 +286,7 @@ export const useTradeguardStore = defineStore("tradeguard", {
     resetCalculator() {
       this.entryPrice = 80000
       this.stopLoss = 75000
+      this.leverage = 1
       this.riskMode = "fixed"
       this.riskValue = 5
       this.direction = "long"
@@ -278,6 +305,7 @@ export const useTradeguardStore = defineStore("tradeguard", {
       return {
         symbol: this.symbol,
         accountBalance: this.accountBalance,
+        leverage: this.leverage,
         riskMode: this.riskMode,
         riskValue: this.riskValue,
         direction: this.direction,
@@ -298,6 +326,7 @@ export const useTradeguardStore = defineStore("tradeguard", {
         const parsed = JSON.parse(raw) as Partial<PersistedState>
         if (typeof parsed.symbol === "string" && parsed.symbol.trim()) this.symbol = parsed.symbol
         if (typeof parsed.accountBalance === "number") this.accountBalance = parsed.accountBalance
+        if (typeof parsed.leverage === "number") this.leverage = parsed.leverage
         if (parsed.riskMode === "fixed" || parsed.riskMode === "percent") this.riskMode = parsed.riskMode
         if (typeof parsed.riskValue === "number") this.riskValue = parsed.riskValue
         if (parsed.direction === "long" || parsed.direction === "short") this.direction = parsed.direction
@@ -316,6 +345,7 @@ export const useTradeguardStore = defineStore("tradeguard", {
       const parsed = payload as Partial<PersistedState>
       if (typeof parsed.symbol === "string" && parsed.symbol.trim()) this.symbol = parsed.symbol
       if (typeof parsed.accountBalance === "number") this.accountBalance = parsed.accountBalance
+      if (typeof parsed.leverage === "number") this.leverage = parsed.leverage
       if (parsed.riskMode === "fixed" || parsed.riskMode === "percent") this.riskMode = parsed.riskMode
       if (typeof parsed.riskValue === "number") this.riskValue = parsed.riskValue
       if (parsed.direction === "long" || parsed.direction === "short") this.direction = parsed.direction

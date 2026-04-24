@@ -21,16 +21,19 @@ Architecture note: this project is now local-only and uses Pinia + browser `loca
   - Entry Price
   - Stop Loss
   - Account Balance
+  - Leverage Slider (1x - 100x)
   - Risk Value
 - Core calculations implemented in real time:
   - Risk Amount (dynamic by risk mode)
   - Risk Per Unit (`abs(entry - stopLoss)`)
   - Quantity
   - Total Position Size (USDT)
+  - Margin Required (Position Size / Leverage)
   - 1R / 2R / 3R targets
 - Long/Short target logic implemented:
   - Long: `entry + N * riskPerUnit`
   - Short: `entry - N * riskPerUnit`
+  - Auto-detect trade direction based on Entry and Stop Loss inputs
 - Utility controls implemented:
   - `Reset Inputs` action to restore calculator defaults quickly
 
@@ -51,7 +54,9 @@ Architecture note: this project is now local-only and uses Pinia + browser `loca
   - Account Balance <= 0
   - Risk Value <= 0
   - Entry equals Stop Loss
-- Visual warning state implemented on the execution card when inputs are invalid.
+- Margin validation implemented to block execution when:
+  - Required Margin exceeds Account Balance
+- Visual warning state implemented on the execution card when inputs are invalid or margin is insufficient.
 
 ## 5. Execution Card
 - Implemented output card with:
@@ -72,6 +77,7 @@ Architecture note: this project is now local-only and uses Pinia + browser `loca
   - Entry (single value)
   - Entry range (uses midpoint)
   - Stop Loss
+  - Leverage (e.g., `Lev: 10x` or `Cross 20x`)
   - Targets line
 - Improved parser coverage implemented for common variants:
   - `entry`, `entries`, `buy zone`, `stop loss`, `take profit`, `tp`

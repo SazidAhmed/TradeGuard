@@ -36,6 +36,7 @@ const {
   entryPrice,
   stopLoss,
   accountBalance,
+  leverage,
   riskMode,
   riskValue,
   direction,
@@ -46,8 +47,10 @@ const {
   heatmapCells,
   riskAmount,
   hasInvalidInputs,
+  hasInsufficientMargin,
   quantityToBuy,
   totalCostUSDT,
+  marginRequiredUSDT,
   targets,
   remainingBalance,
   survivalLossesRemaining,
@@ -110,7 +113,7 @@ const formatCompactMoney = (value: number) =>
   }).format(value);
 
 const copyTarget = async (price: number) => {
-  if (!process.client || hasInvalidInputs.value) return;
+  if (!process.client || hasInvalidInputs.value || hasInsufficientMargin.value) return;
   try {
     await navigator.clipboard.writeText(String(price));
     copyMessage.value = `Copied target ${price}`;
@@ -199,6 +202,17 @@ watch(
   () => store.persistToStorage(),
   { deep: true },
 );
+
+watch(
+  [entryPrice, stopLoss],
+  ([newEntry, newSL]) => {
+    const entry = Number(newEntry);
+    const sl = Number(newSL);
+    if (!Number.isNaN(entry) && !Number.isNaN(sl) && entry > 0 && sl > 0) {
+      direction.value = entry > sl ? 'long' : 'short';
+    }
+  }
+);
 </script>
 
 <template>
@@ -285,7 +299,7 @@ watch(
                 {{ hasInvalidInputs ? "---" : toFixedNumber(quantityToBuy, 6) }}
               </p>
               <p class="mt-0.5 text-[10px] text-muted-foreground">
-                Pos: {{ hasInvalidInputs ? "---" : formatMoney(totalCostUSDT) }}
+                Pos: {{ hasInvalidInputs ? "---" : formatMoney(totalCostUSDT) }} &bull; Margin: {{ hasInvalidInputs ? "---" : formatMoney(marginRequiredUSDT) }}
               </p>
             </CardContent>
           </Card>
@@ -431,17 +445,34 @@ watch(
               </div>
             </div>
 
-            <!-- Balance -->
-            <div>
-              <Label class="mb-1.5 block text-xs font-medium"
-                >Account Balance (USDT)</Label
-              >
-              <Input
-                v-model="accountBalance"
-                type="number"
-                step="any"
-                class="h-11"
-              />
+            <!-- Balance & Leverage -->
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <Label class="mb-1.5 block text-xs font-medium"
+                  >Account Balance (USDT)</Label
+                >
+                <Input
+                  v-model="accountBalance"
+                  type="number"
+                  step="any"
+                  class="h-11"
+                />
+              </div>
+              <div>
+                <Label class="mb-1.5 flex justify-between text-xs font-medium">
+                  <span>Leverage</span>
+                  <span class="text-indigo-600">{{ leverage }}x</span>
+                </Label>
+                <div class="flex h-11 items-center px-1">
+                  <input
+                    v-model.number="leverage"
+                    type="range"
+                    min="1"
+                    max="100"
+                    class="w-full accent-indigo-600"
+                  />
+                </div>
+              </div>
             </div>
 
             <!-- Risk Input -->
@@ -499,11 +530,18 @@ watch(
               <TriangleAlert class="h-4 w-4 flex-shrink-0" />
               Check inputs: Entry, SL, balance, and risk must be positive.
             </div>
+            <div
+              v-else-if="hasInsufficientMargin"
+              class="flex items-center gap-2 rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive"
+            >
+              <TriangleAlert class="h-4 w-4 flex-shrink-0" />
+              Insufficient margin! Required margin exceeds account balance.
+            </div>
           </CardContent>
         </Card>
 
         <!-- Target Buttons -->
-        <div v-if="!hasInvalidInputs" class="grid grid-cols-3 gap-2">
+        <div v-if="!hasInvalidInputs && !hasInsufficientMargin" class="grid grid-cols-3 gap-2">
           <Button
             v-for="item in targets"
             :key="item.multiple"
@@ -524,7 +562,7 @@ watch(
 
         <!-- Log Trade Button -->
         <Button
-          :disabled="hasInvalidInputs"
+          :disabled="hasInvalidInputs || hasInsufficientMargin"
           class="w-full h-12 text-base font-medium"
           @click="store.logTradeSnapshot"
         >
@@ -695,7 +733,7 @@ watch(
                 <p class="font-medium">{{ formatNumber(trade.quantity, 2) }}</p>
               </div>
               <div class="rounded-lg bg-gray-50 p-2">
-                <p class="text-xs text-muted-foreground">Size</p>
+                <p class="text-xs text-muted-foreground">Size ({{ trade.leverage }}x)</p>
                 <p class="font-medium">
                   {{ formatCompactMoney(trade.positionSizeUSDT) }}
                 </p>
