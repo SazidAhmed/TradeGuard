@@ -712,17 +712,23 @@ watch(
         <!-- Empty State -->
         <div
           v-if="tradeLog.length === 0"
-          class="rounded-xl border border-dashed bg-card p-8 text-center"
+          class="relative overflow-hidden rounded-2xl border border-dashed border-indigo-200 dark:border-indigo-800 bg-gradient-to-b from-indigo-50/50 to-white dark:from-indigo-950/20 dark:to-background p-10 text-center shadow-sm"
         >
+          <div class="absolute -right-4 -top-4 h-24 w-24 rounded-full bg-indigo-500/10 blur-2xl"></div>
+          <div class="absolute -bottom-4 -left-4 h-24 w-24 rounded-full bg-blue-500/10 blur-2xl"></div>
+          
           <div
-            class="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-muted"
+            class="relative mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-indigo-100 text-indigo-600 shadow-inner dark:bg-indigo-900/50 dark:text-indigo-400"
           >
-            <List class="h-6 w-6 text-muted-foreground" />
+            <BarChart3 class="h-8 w-8" />
           </div>
-          <p class="text-sm text-muted-foreground">No trades yet</p>
-          <p class="text-xs text-muted-foreground">
-            Log a trade from the Calculator tab
+          <h3 class="mb-1 text-lg font-bold text-foreground">No trades logged</h3>
+          <p class="text-sm text-muted-foreground">
+            Your trading journey starts here. Head over to the Calculator to log your first setup.
           </p>
+          <Button class="mt-6 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-500/20" @click="activeTab = 'calculator'">
+            Go to Calculator
+          </Button>
         </div>
 
         <!-- Trade Cards -->
@@ -730,7 +736,7 @@ watch(
           <div
             v-for="trade in displayedTrades"
             :key="trade.id"
-            class="overflow-hidden rounded-xl bg-card border shadow-sm"
+            class="overflow-hidden rounded-xl bg-card border shadow-sm transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 hover:border-indigo-200 dark:hover:border-indigo-800"
           >
           <!-- Trade Header -->
           <div class="p-4">
@@ -755,17 +761,14 @@ watch(
                 </p>
               </div>
               <span
-                class="rounded-full px-2.5 py-1 text-xs font-medium"
-                :class="
-                  getOutcomeColor(trade.outcome)
-                    .replace('bg-', 'bg-opacity-20 text-')
-                    .replace('500', '700')
-                    .replace('400', '600') +
-                  ' ' +
-                  getOutcomeColor(trade.outcome)
-                    .replace('bg-', 'bg-opacity-20 ')
-                    .replace('bg-muted', 'bg-gray-200')
-                "
+                class="rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider shadow-sm"
+                :class="{
+                  'bg-emerald-500 text-white': trade.outcome === 'Win',
+                  'bg-red-500 text-white': trade.outcome === 'Loss',
+                  'bg-amber-500 text-white': trade.outcome === 'Breakeven',
+                  'bg-slate-500 text-white': trade.outcome === 'Open',
+                  'bg-muted text-muted-foreground': !['Win', 'Loss', 'Breakeven', 'Open'].includes(trade.outcome)
+                }"
               >
                 {{ trade.outcome }}
               </span>
@@ -947,25 +950,28 @@ watch(
         <section v-else-if="activeTab === 'stats'" class="space-y-3 p-4">
         <!-- Progress Card -->
         <Card
-          class="overflow-hidden bg-gradient-to-br from-indigo-600 to-indigo-700 text-white"
+          class="relative overflow-hidden border-indigo-200 dark:border-indigo-800 bg-gradient-to-br from-indigo-600 to-violet-600 text-white shadow-md"
         >
-          <CardContent class="p-4">
+          <div class="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-white/10 blur-2xl"></div>
+          <CardContent class="p-4 relative z-10">
             <div class="mb-3 flex items-center justify-between">
               <div class="flex items-center gap-2">
-                <Trophy class="h-5 w-5" />
-                <span class="font-semibold">100-Trade Challenge</span>
+                <Trophy class="h-5 w-5 text-indigo-100" />
+                <span class="font-bold tracking-wide">100-Trade Challenge</span>
               </div>
-              <span class="text-2xl font-bold"
+              <span class="text-2xl font-black tabular-nums tracking-tight"
                 >{{ formatNumber(progressPercent, 0) }}%</span
               >
             </div>
-            <div class="h-3 overflow-hidden rounded-full bg-white/20">
+            <div class="h-3 overflow-hidden rounded-full bg-black/20 shadow-inner">
               <div
-                class="h-full rounded-full bg-white transition-all"
+                class="h-full rounded-full bg-gradient-to-r from-emerald-400 to-emerald-300 transition-all duration-1000 ease-out relative overflow-hidden"
                 :style="{ width: `${progressPercent}%` }"
-              />
+              >
+                <div class="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/40 to-transparent animate-[shimmer_2s_infinite]"></div>
+              </div>
             </div>
-            <p class="mt-2 text-sm text-white/80">
+            <p class="mt-2 text-xs font-medium text-indigo-100">
               {{ totalTradesCount }} of 100 trades completed
             </p>
           </CardContent>
@@ -973,51 +979,54 @@ watch(
 
         <!-- Quick Stats Grid -->
         <div class="grid grid-cols-3 gap-2">
-          <div class="rounded-xl bg-card border p-3 text-center shadow-sm">
+          <div class="relative overflow-hidden rounded-xl bg-card border p-3 text-center shadow-sm">
+            <div class="absolute inset-0 bg-gradient-to-b from-emerald-500/5 to-transparent dark:from-emerald-500/10 pointer-events-none"></div>
             <div
-              class="mx-auto mb-1 flex h-8 w-8 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-900/50"
+              class="relative mx-auto mb-1 flex h-8 w-8 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-900/50"
             >
               <span class="text-sm font-bold text-emerald-600 dark:text-emerald-400">W</span>
             </div>
-            <p class="text-xl font-bold dark:text-white">{{ winsCount }}</p>
-            <p class="text-xs text-muted-foreground">Wins</p>
+            <p class="relative text-xl font-black tabular-nums tracking-tight dark:text-white">{{ winsCount }}</p>
+            <p class="relative text-[10px] font-bold uppercase tracking-wider text-muted-foreground mt-0.5">Wins</p>
           </div>
-          <div class="rounded-xl bg-card border p-3 text-center shadow-sm">
+          <div class="relative overflow-hidden rounded-xl bg-card border p-3 text-center shadow-sm">
+            <div class="absolute inset-0 bg-gradient-to-b from-red-500/5 to-transparent dark:from-red-500/10 pointer-events-none"></div>
             <div
-              class="mx-auto mb-1 flex h-8 w-8 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/50"
+              class="relative mx-auto mb-1 flex h-8 w-8 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/50"
             >
               <span class="text-sm font-bold text-red-600 dark:text-red-400">L</span>
             </div>
-            <p class="text-xl font-bold dark:text-white">{{ lossesCount }}</p>
-            <p class="text-xs text-muted-foreground">Losses</p>
+            <p class="relative text-xl font-black tabular-nums tracking-tight dark:text-white">{{ lossesCount }}</p>
+            <p class="relative text-[10px] font-bold uppercase tracking-wider text-muted-foreground mt-0.5">Losses</p>
           </div>
-          <div class="rounded-xl bg-card border p-3 text-center shadow-sm">
+          <div class="relative overflow-hidden rounded-xl bg-card border p-3 text-center shadow-sm">
+            <div class="absolute inset-0 bg-gradient-to-b from-amber-500/5 to-transparent dark:from-amber-500/10 pointer-events-none"></div>
             <div
-              class="mx-auto mb-1 flex h-8 w-8 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900/50"
+              class="relative mx-auto mb-1 flex h-8 w-8 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900/50"
             >
               <span class="text-sm font-bold text-amber-600 dark:text-amber-400">BE</span>
             </div>
-            <p class="text-xl font-bold dark:text-white">{{ breakevenCount }}</p>
-            <p class="text-xs text-muted-foreground">Breakeven</p>
+            <p class="relative text-xl font-black tabular-nums tracking-tight dark:text-white">{{ breakevenCount }}</p>
+            <p class="relative text-[10px] font-bold uppercase tracking-wider text-muted-foreground mt-0.5">Breakeven</p>
           </div>
         </div>
 
         <!-- Win Rate & Net R -->
         <div class="grid grid-cols-2 gap-2">
-          <div class="rounded-xl bg-card border p-3 shadow-sm">
-            <p class="text-xs text-muted-foreground">Win Rate</p>
+          <div class="rounded-xl bg-card border p-4 shadow-sm flex flex-col justify-center">
+            <p class="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Win Rate</p>
             <p
-              class="text-2xl font-bold"
-              :class="winRate >= 50 ? 'text-emerald-600' : 'text-gray-900 dark:text-white'"
+              class="text-3xl font-black tabular-nums tracking-tight mt-1"
+              :class="winRate >= 50 ? 'text-emerald-600 dark:text-emerald-400' : 'text-foreground'"
             >
               {{ formatNumber(winRate, 1) }}%
             </p>
           </div>
-          <div class="rounded-xl bg-card border p-3 shadow-sm">
-            <p class="text-xs text-muted-foreground">Net R</p>
+          <div class="rounded-xl bg-card border p-4 shadow-sm flex flex-col justify-center">
+            <p class="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Net R</p>
             <p
-              class="text-2xl font-bold"
-              :class="netR >= 0 ? 'text-emerald-600' : 'text-red-600'"
+              class="text-3xl font-black tabular-nums tracking-tight mt-1"
+              :class="netR >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'"
             >
               {{ formatNumber(netR, 1) }}R
             </p>
@@ -1085,13 +1094,13 @@ watch(
               <div
                 v-for="cell in heatmapCells"
                 :key="cell.id"
-                class="aspect-square rounded-sm"
+                class="relative aspect-square rounded-md transition-all duration-300 hover:scale-[1.15] hover:shadow-md cursor-crosshair z-10 hover:z-20"
                 :class="{
-                  'bg-muted': cell.outcome === 'Pending',
-                  'bg-emerald-500': cell.outcome === 'Win',
-                  'bg-red-500': cell.outcome === 'Loss',
-                  'bg-amber-400': cell.outcome === 'Breakeven',
-                  'bg-slate-400': cell.outcome === 'Open',
+                  'bg-muted hover:bg-muted/80': cell.outcome === 'Pending',
+                  'bg-emerald-500 shadow-emerald-500/20': cell.outcome === 'Win',
+                  'bg-red-500 shadow-red-500/20': cell.outcome === 'Loss',
+                  'bg-amber-400 shadow-amber-500/20': cell.outcome === 'Breakeven',
+                  'bg-slate-400 shadow-slate-500/20': cell.outcome === 'Open',
                 }"
                 :title="`Trade ${cell.id}: ${cell.outcome}`"
               />

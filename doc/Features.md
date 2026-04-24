@@ -156,5 +156,16 @@ Architecture note: this project is now local-only and uses Pinia + browser `loca
 - Global toast notifications updated with a modern bounce animation and scaled appearance.
 - Tabular numbers (`tabular-nums`) applied to critical data elements for clean alignment.
 
+## 12. Content Formatting & Visual Polish (Phase 4)
+- **Trades Tab**: 
+  - Redesigned empty state with a premium illustrative layout and glowing background gradients.
+  - Added subtle lift/shadow hover effects to trade cards.
+  - Simplified outcome badges using solid colored pills for quick scanning.
+- **Stats Tab**:
+  - Restyled the Progress Card into a highly polished gradient container with a glowing progress bar and shimmer animation.
+  - Added background gradients to the Quick Stats grid.
+  - Enlarged typography and utilized tabular numbers for Win Rate and Net R.
+  - Improved the Survival Heatmap cells with interactive scaling and shadow effects on hover.
+
 ## Not Implemented Yet (Planned Later)
 - Exchange API integration and auto-order execution
