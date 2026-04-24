@@ -229,7 +229,7 @@ watch(
   >
     <!-- Mobile Container -->
     <main
-      class="relative min-h-screen w-full max-w-md bg-background pb-20 md:h-[800px] md:min-h-0 md:rounded-2xl md:border md:shadow-2xl md:overflow-y-auto"
+      class="relative min-h-screen w-full max-w-md bg-background pb-20 md:h-[800px] md:min-h-0 md:rounded-2xl md:border md:shadow-2xl md:overflow-y-auto md:pb-0"
     >
       <!-- Mobile Header -->
       <header class="sticky top-0 z-30 bg-background/95 backdrop-blur px-4 py-3 border-b">
@@ -573,7 +573,7 @@ watch(
         <!-- Log Trade Button -->
         <Button
           :disabled="hasInvalidInputs || hasInsufficientMargin"
-          class="w-full h-12 text-base font-medium"
+          class="w-full h-12 text-base font-medium bg-indigo-600 text-white hover:bg-indigo-700 dark:bg-indigo-600 dark:text-white dark:hover:bg-indigo-700"
           @click="() => { store.logTradeSnapshot(); copyMessage = 'Trade logged!'; setTimeout(() => copyMessage = '', 2000); }"
         >
           <Plus class="mr-2 h-5 w-5" />
@@ -1098,13 +1098,13 @@ watch(
 
       <!-- Bottom Navigation -->
       <nav
-        class="fixed bottom-0 left-0 right-0 z-50 border-t bg-white md:absolute md:rounded-b-2xl"
+        class="fixed bottom-0 left-0 right-0 z-50 border-t bg-background md:sticky md:bottom-0 md:rounded-b-2xl"
       >
         <div class="mx-auto flex max-w-md">
           <button
             class="flex flex-1 flex-col items-center gap-1 py-3 transition-colors"
             :class="
-              activeTab === 'calculator' ? 'text-indigo-600' : 'text-gray-400'
+              activeTab === 'calculator' ? 'text-indigo-600 dark:text-indigo-400' : 'text-muted-foreground'
             "
             @click="activeTab = 'calculator'"
           >
@@ -1117,7 +1117,7 @@ watch(
           <button
             class="flex flex-1 flex-col items-center gap-1 py-3 transition-colors"
             :class="
-              activeTab === 'trades' ? 'text-indigo-600' : 'text-gray-400'
+              activeTab === 'trades' ? 'text-indigo-600 dark:text-indigo-400' : 'text-muted-foreground'
             "
             @click="activeTab = 'trades'"
           >
@@ -1135,7 +1135,7 @@ watch(
           </button>
           <button
             class="flex flex-1 flex-col items-center gap-1 py-3 transition-colors"
-            :class="activeTab === 'stats' ? 'text-indigo-600' : 'text-gray-400'"
+            :class="activeTab === 'stats' ? 'text-indigo-600 dark:text-indigo-400' : 'text-muted-foreground'"
             @click="activeTab = 'stats'"
           >
             <BarChart3
