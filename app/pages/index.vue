@@ -99,6 +99,18 @@ const importFileInput = ref<HTMLInputElement | null>(null);
 const showSignalParser = ref(false);
 const showAllTrades = ref(false);
 
+const showToast = (message: string, duration = 2000) => {
+  copyMessage.value = message;
+  setTimeout(() => {
+    copyMessage.value = "";
+  }, duration);
+};
+
+const logTrade = () => {
+  store.logTradeSnapshot();
+  showToast('Trade logged! ⚡');
+};
+
 const PRICE_DECIMALS = 6;
 const QUANTITY_DECIMALS = 4;
 const toFixedNumber = (value: number, decimals = PRICE_DECIMALS) =>
@@ -127,10 +139,7 @@ const copyTarget = async (price: number) => {
   if (!process.client || hasInvalidInputs.value || hasInsufficientMargin.value) return;
   try {
     await navigator.clipboard.writeText(String(price));
-    copyMessage.value = `Copied target ${price}`;
-    setTimeout(() => {
-      copyMessage.value = "";
-    }, 2000);
+    showToast(`Copied target: ${price}`);
   } catch {
     copyMessage.value = "Clipboard permission denied.";
   }
@@ -757,7 +766,7 @@ watch(
         <Button
           :disabled="hasInvalidInputs || hasInsufficientMargin"
           class="relative w-full h-12 text-base font-bold bg-gradient-to-r from-indigo-600 to-violet-600 text-white hover:from-indigo-500 hover:to-violet-500 dark:from-indigo-600 dark:to-violet-600 dark:text-white dark:hover:from-indigo-500 dark:hover:to-violet-500 border-0 shadow-lg shadow-indigo-500/25 overflow-hidden group transition-all duration-300 disabled:opacity-50 disabled:shadow-none"
-          @click="() => { store.logTradeSnapshot(); copyMessage = 'Trade logged!'; setTimeout(() => copyMessage = '', 2000); }"
+          @click="logTrade()"
         >
           <div class="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent group-hover:animate-[shimmer_1.5s_infinite]"></div>
           <Plus class="mr-2 h-5 w-5 transition-transform group-hover:rotate-90 duration-300" />
