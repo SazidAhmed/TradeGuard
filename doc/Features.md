@@ -10,8 +10,8 @@ Architecture note: this project is now local-only and uses Pinia + browser `loca
   - `Journal (Phase 2)` placeholder
   - `Analytics (Phase 2)` placeholder
 - Sticky top bar implemented with live survival stats:
-  - Current Balance (survival-adjusted from logged losses)
-  - Losses Remaining (based on remaining balance and current risk)
+  - Current Balance (auto-compounded from realized PnL)
+  - Losses Remaining (based on current balance and current risk)
   - Risk Per Trade
 
 ## 2. Smart Calculator Engine
@@ -42,7 +42,7 @@ Architecture note: this project is now local-only and uses Pinia + browser `loca
   - `Percent (%)`
   - `Fixed ($)`
 - Calculation behavior implemented:
-  - Percent mode: `balance * (riskValue / 100)`
+  - Percent mode: `current balance * (riskValue / 100)`
   - Fixed mode: `riskValue`
 - Live risk preview implemented:
   - `You are risking $X.XX on this trade.`
@@ -68,7 +68,7 @@ Architecture note: this project is now local-only and uses Pinia + browser `loca
   - `Set 1:1 Target`
   - `Set 1:2 Target`
   - `Set 1:3 Target`
-- Clipboard copy behavior implemented with user feedback message.
+- Action feedback implemented with sleek floating Toast notifications.
 - Trade snapshot logging action implemented directly from the execution card.
 
 ## 6. Signal Parser (Quick Paste)

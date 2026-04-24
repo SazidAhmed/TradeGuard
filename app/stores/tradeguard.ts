@@ -60,11 +60,11 @@ export const useTradeguardStore = defineStore("tradeguard", {
     targetRatios: [1, 2, 3] as number[],
   }),
   getters: {
-    riskAmount: (state) => {
-      const balance = Number(state.accountBalance)
-      const userRisk = Number(state.riskValue)
-      if (Number.isNaN(balance) || Number.isNaN(userRisk) || balance <= 0 || userRisk <= 0) return 0
-      return state.riskMode === "percent" ? balance * (userRisk / 100) : userRisk
+    riskAmount(): number {
+      const baseBalance = this.currentBalance
+      const userRisk = Number(this.riskValue)
+      if (Number.isNaN(baseBalance) || Number.isNaN(userRisk) || baseBalance <= 0 || userRisk <= 0) return 0
+      return this.riskMode === "percent" ? baseBalance * (userRisk / 100) : userRisk
     },
     riskPerUnit: (state) => Math.abs(Number(state.entryPrice) - Number(state.stopLoss)),
     hasInvalidInputs(): boolean {
@@ -123,11 +123,21 @@ export const useTradeguardStore = defineStore("tradeguard", {
       if (planned <= 0) return 0
       return ((this.averageRiskPerTrade - planned) / planned) * 100
     },
-    accountAtRiskLosses: (state) => state.tradeLog
-      .filter(trade => trade.outcome === "Loss")
-      .reduce((sum, trade) => sum + trade.actualRiskUsed, 0),
+    realizedPnL(): number {
+      return this.closedTrades.reduce((sum, trade) => {
+        if (trade.outcome === "Loss") return sum - trade.actualRiskUsed
+        if (trade.outcome === "Win") {
+          const reward = trade.actualRiskUsed * (trade.targetHitMultiple || 1)
+          return sum + reward
+        }
+        return sum
+      }, 0)
+    },
+    currentBalance(): number {
+      return Number(this.accountBalance) + this.realizedPnL
+    },
     remainingBalance(): number {
-      return Math.max(0, Number(this.accountBalance) - this.accountAtRiskLosses)
+      return Math.max(0, this.currentBalance)
     },
     survivalLossesRemaining(): number {
       if (this.riskAmount <= 0) return 0

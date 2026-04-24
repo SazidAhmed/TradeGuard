@@ -52,6 +52,8 @@ const {
   totalCostUSDT,
   marginRequiredUSDT,
   targets,
+  currentBalance,
+  realizedPnL,
   remainingBalance,
   survivalLossesRemaining,
   averageRiskPerTrade,
@@ -247,8 +249,8 @@ watch(
         >
           <span
             >Balance:
-            <strong class="text-gray-900">{{
-              formatCompactMoney(remainingBalance)
+            <strong :class="currentBalance >= accountBalance ? 'text-emerald-600' : 'text-gray-900'">{{
+              formatCompactMoney(currentBalance)
             }}</strong></span
           >
           <span
@@ -449,7 +451,7 @@ watch(
             <div class="grid grid-cols-2 gap-3">
               <div>
                 <Label class="mb-1.5 block text-xs font-medium"
-                  >Account Balance (USDT)</Label
+                  >Starting Balance (USDT)</Label
                 >
                 <Input
                   v-model="accountBalance"
@@ -555,16 +557,11 @@ watch(
           </Button>
         </div>
 
-        <!-- Copy Message -->
-        <p v-if="copyMessage" class="text-center text-xs text-indigo-600">
-          {{ copyMessage }}
-        </p>
-
         <!-- Log Trade Button -->
         <Button
           :disabled="hasInvalidInputs || hasInsufficientMargin"
           class="w-full h-12 text-base font-medium"
-          @click="store.logTradeSnapshot"
+          @click="() => { store.logTradeSnapshot(); copyMessage = 'Trade logged!'; setTimeout(() => copyMessage = '', 2000); }"
         >
           <Plus class="mr-2 h-5 w-5" />
           Log Trade
@@ -1124,6 +1121,14 @@ watch(
           </button>
         </div>
       </nav>
+      <!-- Global Toast Notification -->
+      <div
+        class="fixed bottom-10 left-1/2 z-50 flex -translate-x-1/2 transform items-center gap-2 rounded-full bg-gray-900/90 px-4 py-2 text-sm font-medium text-white shadow-xl backdrop-blur-md transition-all duration-300"
+        :class="copyMessage ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0 pointer-events-none'"
+      >
+        <Zap class="h-4 w-4 text-emerald-400" />
+        {{ copyMessage }}
+      </div>
     </main>
   </div>
 </template>
