@@ -172,5 +172,9 @@ Architecture note: this project is now local-only and uses Pinia + browser `loca
   - Visually grouped inputs into distinct sections (`Trade Setup`, `Risk Config`, `Output Config`) using nested cards and icons for improved cognitive flow.
   - Redesigned the Signal Parser into a premium expandable section with an animated wand icon and subtle gradient backgrounds.
 
+## 14. Mobile-Specific Refinements (Phase 6)
+- Implemented iOS safe area padding (`env(safe-area-inset-bottom)`) for the bottom navigation bar to prevent overlap with the home indicator.
+- Ensured touch targets across the application (inputs `h-11`, bottom nav items `h-16`) meet or exceed mobile usability standards.
+
 ## Not Implemented Yet (Planned Later)
 - Exchange API integration and auto-order execution
