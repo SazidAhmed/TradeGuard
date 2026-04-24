@@ -12,6 +12,7 @@ export interface TradeLogEntry {
   direction: Direction
   entryPrice: number
   stopLoss: number
+  leverage: number
   riskMode: RiskMode
   riskValue: number
   riskAmount: number
@@ -20,13 +21,14 @@ export interface TradeLogEntry {
   positionSizeUSDT: number
   targets: number[]
   actualRiskUsed: number
-  targetHitMultiple: 1 | 2 | 3 | null
+  targetHitMultiple: number | null
   outcome: TradeOutcome
 }
 
 interface PersistedState {
   symbol: string
   accountBalance: number
+  leverage: number
   riskMode: RiskMode
   riskValue: number
   direction: Direction
@@ -47,6 +49,7 @@ export const useTradeguardStore = defineStore("tradeguard", {
     entryPrice: 80000,
     stopLoss: 75000,
     accountBalance: 1000,
+    leverage: 1,
     riskMode: "fixed" as RiskMode,
     riskValue: 5,
     direction: "long" as Direction,
@@ -57,11 +60,11 @@ export const useTradeguardStore = defineStore("tradeguard", {
     targetRatios: [1, 2, 3] as number[],
   }),
   getters: {
-    riskAmount: (state) => {
-      const balance = Number(state.accountBalance)
-      const userRisk = Number(state.riskValue)
-      if (Number.isNaN(balance) || Number.isNaN(userRisk) || balance <= 0 || userRisk <= 0) return 0
-      return state.riskMode === "percent" ? balance * (userRisk / 100) : userRisk
+    riskAmount(): number {
+      const baseBalance = this.currentBalance
+      const userRisk = Number(this.riskValue)
+      if (Number.isNaN(baseBalance) || Number.isNaN(userRisk) || baseBalance <= 0 || userRisk <= 0) return 0
+      return this.riskMode === "percent" ? baseBalance * (userRisk / 100) : userRisk
     },
     riskPerUnit: (state) => Math.abs(Number(state.entryPrice) - Number(state.stopLoss)),
     hasInvalidInputs(): boolean {
@@ -71,12 +74,20 @@ export const useTradeguardStore = defineStore("tradeguard", {
         || Number(this.riskValue) <= 0
         || this.riskPerUnit === 0
     },
+    hasInsufficientMargin(): boolean {
+      if (this.hasInvalidInputs) return false
+      return this.marginRequiredUSDT > Number(this.accountBalance)
+    },
     quantityToBuy(): number {
       if (this.hasInvalidInputs) return 0
       return this.riskAmount / this.riskPerUnit
     },
     totalCostUSDT(): number {
       return this.quantityToBuy * Number(this.entryPrice)
+    },
+    marginRequiredUSDT(): number {
+      const lev = Number(this.leverage) || 1
+      return this.totalCostUSDT / lev
     },
     targets(): { multiple: number, price: number }[] {
       return this.targetRatios.map((n) => {
@@ -112,11 +123,21 @@ export const useTradeguardStore = defineStore("tradeguard", {
       if (planned <= 0) return 0
       return ((this.averageRiskPerTrade - planned) / planned) * 100
     },
-    accountAtRiskLosses: (state) => state.tradeLog
-      .filter(trade => trade.outcome === "Loss")
-      .reduce((sum, trade) => sum + trade.actualRiskUsed, 0),
+    realizedPnL(): number {
+      return this.closedTrades.reduce((sum, trade) => {
+        if (trade.outcome === "Loss") return sum - trade.actualRiskUsed
+        if (trade.outcome === "Win") {
+          const reward = trade.actualRiskUsed * (trade.targetHitMultiple ?? 1)
+          return sum + reward
+        }
+        return sum
+      }, 0)
+    },
+    currentBalance(): number {
+      return Number(this.accountBalance) + this.realizedPnL
+    },
     remainingBalance(): number {
-      return Math.max(0, Number(this.accountBalance) - this.accountAtRiskLosses)
+      return Math.max(0, this.currentBalance)
     },
     survivalLossesRemaining(): number {
       if (this.riskAmount <= 0) return 0
@@ -154,11 +175,13 @@ export const useTradeguardStore = defineStore("tradeguard", {
       const entryRegex = /(?:entry|entries|buy(?:\s+zone)?|at|price)\s*[:=\s]*\$?\s*([\d.]+)/i
       const slRegex = /(?:sl|stop(?:\s|-)?loss|stop)\s*[:=\s]*\$?\s*([\d.]+)/i
       const targetsRegex = /(?:tp|take\s*profit|target|targets?)\s*[:=\s]*([^\n]+)/i
+      const levRegex = /(?:lev|leverage|cross|isolated)\s*[:=\s]*([0-9]+)\s*x?/i
 
       const rangeMatch = text.match(entryRangeRegex)
       const entryMatch = text.match(entryRegex)
       const slMatch = text.match(slRegex)
       const targetsMatch = text.match(targetsRegex)
+      const levMatch = text.match(levRegex) || text.match(/([0-9]+)\s*x/i)
 
       let changes = 0
 
@@ -182,6 +205,14 @@ export const useTradeguardStore = defineStore("tradeguard", {
         const parsedSl = Number(slMatch[1])
         if (!Number.isNaN(parsedSl)) {
           this.stopLoss = parsedSl
+          changes++
+        }
+      }
+
+      if (levMatch?.[1]) {
+        const parsedLev = Number(levMatch[1])
+        if (!Number.isNaN(parsedLev) && parsedLev > 0 && parsedLev <= 100) {
+          this.leverage = parsedLev
           changes++
         }
       }
@@ -211,6 +242,10 @@ export const useTradeguardStore = defineStore("tradeguard", {
         this.parserMessage = "Cannot log trade: fix invalid calculator inputs first."
         return
       }
+      if (this.hasInsufficientMargin) {
+        this.parserMessage = "Cannot log trade: insufficient margin."
+        return
+      }
 
       const entry: TradeLogEntry = {
         id: Date.now(),
@@ -219,6 +254,7 @@ export const useTradeguardStore = defineStore("tradeguard", {
         direction: this.direction,
         entryPrice: toFixedNumber(Number(this.entryPrice)),
         stopLoss: toFixedNumber(Number(this.stopLoss)),
+        leverage: Number(this.leverage),
         riskMode: this.riskMode,
         riskValue: Number(this.riskValue),
         riskAmount: toFixedNumber(this.riskAmount, 4),
@@ -239,7 +275,7 @@ export const useTradeguardStore = defineStore("tradeguard", {
         if (outcome !== "Win") item.targetHitMultiple = null
       }
     },
-    setTargetHitMultiple(id: number, value: 1 | 2 | 3) {
+    setTargetHitMultiple(id: number, value: number) {
       const item = this.tradeLog.find(trade => trade.id === id)
       if (item) {
         item.targetHitMultiple = value
@@ -260,6 +296,7 @@ export const useTradeguardStore = defineStore("tradeguard", {
     resetCalculator() {
       this.entryPrice = 80000
       this.stopLoss = 75000
+      this.leverage = 1
       this.riskMode = "fixed"
       this.riskValue = 5
       this.direction = "long"
@@ -278,6 +315,7 @@ export const useTradeguardStore = defineStore("tradeguard", {
       return {
         symbol: this.symbol,
         accountBalance: this.accountBalance,
+        leverage: this.leverage,
         riskMode: this.riskMode,
         riskValue: this.riskValue,
         direction: this.direction,
@@ -298,6 +336,7 @@ export const useTradeguardStore = defineStore("tradeguard", {
         const parsed = JSON.parse(raw) as Partial<PersistedState>
         if (typeof parsed.symbol === "string" && parsed.symbol.trim()) this.symbol = parsed.symbol
         if (typeof parsed.accountBalance === "number") this.accountBalance = parsed.accountBalance
+        if (typeof parsed.leverage === "number") this.leverage = parsed.leverage
         if (parsed.riskMode === "fixed" || parsed.riskMode === "percent") this.riskMode = parsed.riskMode
         if (typeof parsed.riskValue === "number") this.riskValue = parsed.riskValue
         if (parsed.direction === "long" || parsed.direction === "short") this.direction = parsed.direction
@@ -316,6 +355,7 @@ export const useTradeguardStore = defineStore("tradeguard", {
       const parsed = payload as Partial<PersistedState>
       if (typeof parsed.symbol === "string" && parsed.symbol.trim()) this.symbol = parsed.symbol
       if (typeof parsed.accountBalance === "number") this.accountBalance = parsed.accountBalance
+      if (typeof parsed.leverage === "number") this.leverage = parsed.leverage
       if (parsed.riskMode === "fixed" || parsed.riskMode === "percent") this.riskMode = parsed.riskMode
       if (typeof parsed.riskValue === "number") this.riskValue = parsed.riskValue
       if (parsed.direction === "long" || parsed.direction === "short") this.direction = parsed.direction
