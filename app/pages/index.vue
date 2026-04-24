@@ -25,6 +25,7 @@ import {
   Moon,
   Wand2,
   ShieldAlert,
+  LineChart,
 } from "lucide-vue-next";
 
 useSeoMeta({
@@ -98,6 +99,18 @@ const importFileInput = ref<HTMLInputElement | null>(null);
 const showSignalParser = ref(false);
 const showAllTrades = ref(false);
 
+const showToast = (message: string, duration = 2000) => {
+  copyMessage.value = message;
+  setTimeout(() => {
+    copyMessage.value = "";
+  }, duration);
+};
+
+const logTrade = () => {
+  store.logTradeSnapshot();
+  showToast('Trade logged! ⚡');
+};
+
 const PRICE_DECIMALS = 6;
 const QUANTITY_DECIMALS = 4;
 const toFixedNumber = (value: number, decimals = PRICE_DECIMALS) =>
@@ -126,10 +139,7 @@ const copyTarget = async (price: number) => {
   if (!process.client || hasInvalidInputs.value || hasInsufficientMargin.value) return;
   try {
     await navigator.clipboard.writeText(String(price));
-    copyMessage.value = `Copied target ${price}`;
-    setTimeout(() => {
-      copyMessage.value = "";
-    }, 1500);
+    showToast(`Copied target: ${price}`);
   } catch {
     copyMessage.value = "Clipboard permission denied.";
   }
@@ -173,6 +183,58 @@ const displayedTrades = computed(() => {
 
 const hasMoreTrades = computed(() => filteredTrades.value.length > 5);
 
+const tradeToDelete = ref<number | null>(null);
+const showClearConfirm = ref<'trades' | 'all' | null>(null);
+
+const confirmDeleteTrade = (id: number) => {
+  tradeToDelete.value = id;
+};
+
+const executeDeleteTrade = () => {
+  if (tradeToDelete.value !== null) {
+    store.removeTrade(tradeToDelete.value);
+    tradeToDelete.value = null;
+  }
+};
+
+const cancelDeleteTrade = () => {
+  tradeToDelete.value = null;
+};
+
+const confirmClearAll = (type: 'trades' | 'all') => {
+  showClearConfirm.value = type;
+};
+
+const executeClearAll = () => {
+  if (showClearConfirm.value === 'all') {
+    store.clearAllData();
+  } else if (showClearConfirm.value === 'trades') {
+    store.clearTradeLog();
+  }
+  showClearConfirm.value = null;
+};
+
+const cancelClearAll = () => {
+  showClearConfirm.value = null;
+};
+
+const formatRelativeTime = (dateString: string) => {
+  if (!dateString) return '';
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+  
+  if (diffInSeconds < 60) return 'Just now';
+  const diffInMinutes = Math.floor(diffInSeconds / 60);
+  if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
+  const diffInHours = Math.floor(diffInMinutes / 60);
+  if (diffInHours < 24) return `${diffInHours}h ago`;
+  const diffInDays = Math.floor(diffInHours / 24);
+  if (diffInDays < 7) return `${diffInDays}d ago`;
+  
+  return new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric' }).format(date);
+};
+
 const getOutcomeColor = (outcome: string) => {
   switch (outcome) {
     case "Win":
@@ -202,6 +264,65 @@ const getOutcomeTextColor = (outcome: string) => {
       return "text-muted-foreground";
   }
 };
+
+const equityCurvePoints = computed(() => {
+  const points: { x: number; y: number }[] = [];
+  let cumulativePnl = 0;
+  
+  const reversedTrades = [...tradeLog.value].reverse();
+  points.push({ x: 0, y: 0 });
+  
+  reversedTrades.forEach((trade, idx) => {
+    let pnl = 0;
+    if (trade.outcome === 'Win' && trade.targetHitMultiple) {
+      pnl = trade.actualRiskUsed * trade.targetHitMultiple;
+    } else if (trade.outcome === 'Loss') {
+      pnl = -trade.actualRiskUsed;
+    }
+    
+    cumulativePnl += pnl;
+    points.push({ x: idx + 1, y: cumulativePnl });
+  });
+  
+  return points;
+});
+
+const equityCurvePath = computed(() => {
+  const points = equityCurvePoints.value;
+  if (points.length < 2) return '';
+  
+  const width = 100;
+  const height = 40;
+  
+  const maxX = points[points.length - 1].x;
+  const ys = points.map(p => p.y);
+  const maxY = Math.max(...ys, 0.01);
+  const minY = Math.min(...ys, -0.01);
+  const rangeY = (maxY - minY) || 1;
+  
+  return points.map(p => {
+    const mapX = (p.x / maxX) * width;
+    const mapY = height - ((p.y - minY) / rangeY) * height;
+    return `${mapX},${mapY}`;
+  }).join(' ');
+});
+
+const equityCurveArea = computed(() => {
+  const points = equityCurvePoints.value;
+  if (points.length < 2) return '';
+  const path = equityCurvePath.value;
+  const width = 100;
+  const height = 40;
+  const ys = points.map(p => p.y);
+  const minY = Math.min(...ys, -0.01);
+  const maxY = Math.max(...ys, 0.01);
+  const rangeY = (maxY - minY) || 1;
+  
+  // Zero line Y coordinate
+  const zeroY = height - ((0 - minY) / rangeY) * height;
+  
+  return `${path} ${width},${height} 0,${height}`;
+});
 
 onMounted(() => {
   store.hydrateFromStorage();
@@ -592,6 +713,18 @@ watch(
                   class="h-11 dark:text-white"
                 />
               </div>
+
+              <!-- Risk Reward Summary Bar -->
+              <div v-if="targets.length > 0 && riskAmount > 0" class="mt-3">
+                <p class="text-[10px] font-bold uppercase text-muted-foreground mb-1.5 flex justify-between">
+                  <span>Max Risk:Reward</span>
+                  <span class="text-emerald-600 dark:text-emerald-400">1 : {{ formatNumber(targets[targets.length - 1].multiple, 1) }}</span>
+                </p>
+                <div class="h-1.5 w-full rounded-full bg-muted overflow-hidden flex">
+                   <div class="h-full bg-red-500" :style="{ width: `${100 / (1 + targets[targets.length - 1].multiple)}%` }"></div>
+                   <div class="h-full bg-gradient-to-r from-emerald-400 to-emerald-500" :style="{ width: `${(targets[targets.length - 1].multiple * 100) / (1 + targets[targets.length - 1].multiple)}%` }"></div>
+                </div>
+              </div>
             </div>
 
             <!-- Error Message -->
@@ -633,7 +766,7 @@ watch(
         <Button
           :disabled="hasInvalidInputs || hasInsufficientMargin"
           class="relative w-full h-12 text-base font-bold bg-gradient-to-r from-indigo-600 to-violet-600 text-white hover:from-indigo-500 hover:to-violet-500 dark:from-indigo-600 dark:to-violet-600 dark:text-white dark:hover:from-indigo-500 dark:hover:to-violet-500 border-0 shadow-lg shadow-indigo-500/25 overflow-hidden group transition-all duration-300 disabled:opacity-50 disabled:shadow-none"
-          @click="() => { store.logTradeSnapshot(); copyMessage = 'Trade logged!'; setTimeout(() => copyMessage = '', 2000); }"
+          @click="logTrade()"
         >
           <div class="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent group-hover:animate-[shimmer_1.5s_infinite]"></div>
           <Plus class="mr-2 h-5 w-5 transition-transform group-hover:rotate-90 duration-300" />
@@ -723,7 +856,7 @@ watch(
             size="sm"
             variant="outline"
             class="text-xs"
-            @click="store.clearTradeLog"
+            @click="confirmClearAll('trades')"
           >
             <Trash2 class="h-3 w-3" />
           </Button>
@@ -780,6 +913,7 @@ watch(
                   >
                     {{ trade.direction.toUpperCase() }}
                   </span>
+                  <span class="text-[10px] text-muted-foreground ml-1">{{ formatRelativeTime(trade.createdAt) }}</span>
                 </div>
                 <p class="mt-1 text-xs text-muted-foreground">
                   Entry: {{ formatNumber(trade.entryPrice) }} | SL:
@@ -804,7 +938,7 @@ watch(
             <div class="mt-3 grid grid-cols-3 gap-2 text-center">
               <div class="rounded-lg bg-muted/50 p-2">
                 <p class="text-xs text-muted-foreground">Qty</p>
-                <p class="font-medium">{{ formatNumber(trade.quantity, 2) }}</p>
+                <p class="font-medium tabular-nums">{{ formatNumber(trade.quantity, 4) }}</p>
               </div>
               <div class="rounded-lg bg-muted/50 p-2">
                 <p class="text-xs text-muted-foreground">Size ({{ trade.leverage }}x)</p>
@@ -823,16 +957,16 @@ watch(
             <!-- Targets -->
             <div class="mt-3 flex gap-1">
               <div
-                v-for="(target, idx) in trade.targets"
-                :key="idx"
+                v-for="target in trade.targets"
+                :key="target.multiple"
                 class="flex-1 rounded-lg py-1.5 text-center text-xs"
                 :class="
-                  trade.targetHitMultiple === idx + 1
+                  trade.targetHitMultiple === target.multiple
                     ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300'
                     : 'bg-muted text-muted-foreground'
                 "
               >
-                {{ idx + 1 }}R: {{ formatNumber(target, 3) }}
+                {{ target.multiple }}R: {{ formatNumber(target.price, 3) }}
               </div>
             </div>
           </div>
@@ -904,31 +1038,15 @@ watch(
               />
               <div class="flex flex-1 gap-1">
                 <Button
+                  v-for="target in trade.targets"
+                  :key="target.multiple"
                   size="sm"
                   variant="outline"
                   class="flex-1 px-1 h-8 text-[10px]"
-                  :class="trade.targetHitMultiple === 1 ? 'bg-emerald-100 text-emerald-700 border-emerald-200' : ''"
-                  @click="store.setTargetHitMultiple(trade.id, 1)"
+                  :class="trade.targetHitMultiple === target.multiple ? 'bg-emerald-100 text-emerald-700 border-emerald-200' : ''"
+                  @click="store.setTargetHitMultiple(trade.id, target.multiple)"
                 >
-                  1R
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  class="flex-1 px-1 h-8 text-[10px]"
-                  :class="trade.targetHitMultiple === 2 ? 'bg-emerald-100 text-emerald-700 border-emerald-200' : ''"
-                  @click="store.setTargetHitMultiple(trade.id, 2)"
-                >
-                  2R
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  class="flex-1 px-1 h-8 text-[10px]"
-                  :class="trade.targetHitMultiple === 3 ? 'bg-emerald-100 text-emerald-700 border-emerald-200' : ''"
-                  @click="store.setTargetHitMultiple(trade.id, 3)"
-                >
-                  3R
+                  {{ target.multiple }}R
                 </Button>
               </div>
             </div>
@@ -949,12 +1067,13 @@ watch(
                 size="sm"
                 variant="ghost"
                 class="h-8 px-2 text-red-500"
-                @click="store.removeTrade(trade.id)"
+                @click="confirmDeleteTrade(trade.id)"
               >
                 <Trash2 class="h-4 w-4" />
               </Button>
             </div>
           </div>
+        </div>
         </TransitionGroup>
 
         <!-- Show More Button -->
@@ -1037,6 +1156,36 @@ watch(
           </div>
         </div>
 
+        <!-- Equity Curve Chart -->
+        <Card class="overflow-hidden">
+          <CardContent class="p-4">
+            <h3 class="mb-2 flex items-center gap-2 text-sm font-semibold">
+              <LineChart class="h-4 w-4 text-indigo-600" />
+              Equity Curve (PnL)
+            </h3>
+            
+            <div class="h-32 w-full pt-4 relative">
+              <div v-if="equityCurvePoints.length < 2" class="absolute inset-0 flex items-center justify-center text-xs text-muted-foreground">
+                Not enough data to plot
+              </div>
+              <svg v-else viewBox="0 0 100 40" class="w-full h-full overflow-visible" preserveAspectRatio="none">
+                <!-- Zero line (Breakeven) -->
+                <line x1="0" :y1="40 - ((0 - Math.min(...equityCurvePoints.map(p => p.y), -0.01)) / ((Math.max(...equityCurvePoints.map(p => p.y), 0.01) - Math.min(...equityCurvePoints.map(p => p.y), -0.01)) || 1)) * 40" x2="100" :y2="40 - ((0 - Math.min(...equityCurvePoints.map(p => p.y), -0.01)) / ((Math.max(...equityCurvePoints.map(p => p.y), 0.01) - Math.min(...equityCurvePoints.map(p => p.y), -0.01)) || 1)) * 40" stroke="currentColor" stroke-width="0.5" class="text-muted-foreground/30 stroke-dasharray-2" stroke-dasharray="2" />
+                
+                <polygon :points="equityCurveArea" class="fill-indigo-500/10 dark:fill-indigo-500/20" />
+                <polyline :points="equityCurvePath" fill="none" class="stroke-indigo-600 dark:stroke-indigo-400" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </div>
+            
+            <div class="mt-2 flex justify-between text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
+              <span>Start</span>
+              <span :class="equityCurvePoints[equityCurvePoints.length - 1]?.y >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'">
+                Current: {{ formatNumber(equityCurvePoints[equityCurvePoints.length - 1]?.y || 0, 2) }}
+              </span>
+            </div>
+          </CardContent>
+        </Card>
+
         <!-- Win Rate & Net R -->
         <div class="grid grid-cols-2 gap-2">
           <div class="rounded-xl bg-card border p-4 shadow-sm flex flex-col justify-center">
@@ -1062,11 +1211,30 @@ watch(
         <!-- Risk Metrics -->
         <Card class="overflow-hidden">
           <CardContent class="p-4">
-            <h3 class="mb-3 flex items-center gap-2 text-sm font-semibold">
+            <h3 class="mb-4 flex items-center gap-2 text-sm font-semibold">
               <Target class="h-4 w-4 text-indigo-600" />
               Risk Consistency
             </h3>
-            <div class="space-y-3">
+            
+            <div class="flex items-center gap-4 mb-4">
+              <!-- Gauge -->
+              <div class="relative w-24 h-12 overflow-hidden flex-shrink-0">
+                <div class="absolute inset-0 rounded-t-full border-[12px] border-muted dark:border-muted/50 border-b-0"></div>
+                <div 
+                  class="absolute inset-0 rounded-t-full border-[12px] border-emerald-500 border-b-0 origin-bottom transition-transform duration-1000 ease-out" 
+                  :style="{ transform: `rotate(${riskComplianceScore * 1.8 - 180}deg)` }"
+                  :class="riskComplianceScore >= 80 ? 'border-emerald-500' : (riskComplianceScore >= 50 ? 'border-amber-500' : 'border-red-500')"
+                ></div>
+              </div>
+              <div class="flex flex-col">
+                <span class="text-[10px] text-muted-foreground uppercase tracking-wider font-bold">Compliance</span>
+                <span class="text-3xl font-black tabular-nums tracking-tight" :class="riskComplianceScore >= 80 ? 'text-emerald-600 dark:text-emerald-400' : (riskComplianceScore >= 50 ? 'text-amber-600 dark:text-amber-400' : 'text-red-600 dark:text-red-400')">
+                  {{ formatNumber(riskComplianceScore, 0) }}%
+                </span>
+              </div>
+            </div>
+
+            <div class="space-y-3 pt-3 border-t">
               <div class="flex items-center justify-between">
                 <span class="text-xs text-muted-foreground"
                   >Avg Risk/Trade</span
@@ -1076,30 +1244,13 @@ watch(
                 }}</span>
               </div>
               <div class="flex items-center justify-between">
-                <span class="text-xs text-muted-foreground"
-                  >Compliance Score</span
-                >
-                <span
-                  class="font-semibold"
-                  :class="
-                    riskComplianceScore >= 80
-                      ? 'text-emerald-600'
-                      : riskComplianceScore >= 50
-                        ? 'text-amber-600'
-                        : 'text-red-600'
-                  "
-                >
-                  {{ formatNumber(riskComplianceScore, 0) }}%
-                </span>
-              </div>
-              <div class="flex items-center justify-between">
                 <span class="text-xs text-muted-foreground">Risk Drift</span>
                 <span
-                  class="font-semibold"
+                  class="font-semibold tabular-nums"
                   :class="
                     Math.abs(riskDrift) <= 10
-                      ? 'text-emerald-600'
-                      : 'text-amber-600'
+                      ? 'text-emerald-600 dark:text-emerald-400'
+                      : 'text-amber-600 dark:text-amber-400'
                   "
                 >
                   {{ formatNumber(riskDrift, 1) }}%
@@ -1160,7 +1311,7 @@ watch(
         <Button
           variant="outline"
           class="w-full text-destructive"
-          @click="store.clearAllData"
+          @click="confirmClearAll('all')"
         >
           Clear All App Data
         </Button>
@@ -1209,9 +1360,29 @@ watch(
           </button>
         </div>
       </nav>
+
+      <!-- Modals -->
+      <Transition name="fade-slide">
+        <div v-if="tradeToDelete !== null || showClearConfirm !== null" class="fixed inset-0 z-[100] flex items-center justify-center bg-background/80 backdrop-blur-sm p-4">
+          <div class="w-full max-w-xs rounded-2xl border border-indigo-100 dark:border-indigo-900/50 bg-card p-5 shadow-xl">
+            <div class="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/20">
+              <TriangleAlert class="h-6 w-6 text-red-600 dark:text-red-400" />
+            </div>
+            <h3 class="mb-2 text-center text-lg font-bold">Are you sure?</h3>
+            <p class="mb-5 text-center text-sm text-muted-foreground">
+              {{ tradeToDelete !== null ? 'This will permanently delete this trade from your log.' : (showClearConfirm === 'all' ? 'This will permanently clear ALL app data and reset the calculator.' : 'This will permanently clear your entire trade log and reset stats.') }}
+            </p>
+            <div class="flex gap-2">
+              <Button variant="outline" class="flex-1" @click="tradeToDelete !== null ? cancelDeleteTrade() : cancelClearAll()">Cancel</Button>
+              <Button variant="destructive" class="flex-1" @click="tradeToDelete !== null ? executeDeleteTrade() : executeClearAll()">Delete</Button>
+            </div>
+          </div>
+        </div>
+      </Transition>
+
       <!-- Global Toast Notification -->
       <div
-        class="fixed bottom-24 left-1/2 z-50 flex -translate-x-1/2 transform items-center gap-2 rounded-full bg-gray-900/90 px-4 py-2 text-sm font-medium text-white shadow-xl backdrop-blur-md transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)]"
+        class="fixed bottom-24 left-1/2 z-[100] flex -translate-x-1/2 transform items-center gap-2 rounded-full bg-gray-900/90 px-4 py-2 text-sm font-medium text-white shadow-xl backdrop-blur-md transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)]"
         :class="copyMessage ? 'translate-y-0 opacity-100 scale-100' : 'translate-y-8 opacity-0 scale-90 pointer-events-none'"
       >
         <Zap class="h-4 w-4 text-emerald-400" />

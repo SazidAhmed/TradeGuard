@@ -176,5 +176,14 @@ Architecture note: this project is now local-only and uses Pinia + browser `loca
 - Implemented iOS safe area padding (`env(safe-area-inset-bottom)`) for the bottom navigation bar to prevent overlap with the home indicator.
 - Ensured touch targets across the application (inputs `h-11`, bottom nav items `h-16`) meet or exceed mobile usability standards.
 
+## 15. Final Output & Safety Polish (Phase 7)
+- **Calculator Tab**: Added a dynamic, gradient-filled Max Risk:Reward summary bar to quickly visualize the target multiples.
+- **Trades Tab**: 
+  - Added relative timestamps (`Just now`, `2m ago`, etc.) to trade log cards using a custom formatting utility.
+  - Implemented a custom, premium confirmation modal wrapper to prevent accidental trade deletions or full log clears.
+- **Stats Tab**: 
+  - Built a fully custom CSS-driven animated circular gauge to visually represent the Risk Compliance Score.
+  - **Equity Curve Chart**: Added a pure SVG-based reactive line chart to visualize cumulative Profit and Loss (PnL) over the challenge lifespan.
+
 ## Not Implemented Yet (Planned Later)
 - Exchange API integration and auto-order execution

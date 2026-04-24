@@ -144,26 +144,26 @@
 - [ ] **Group related inputs visually**: Add section dividers or subtle card backgrounds for "Trade Setup" (symbol, direction, entry, SL) vs "Risk Config" (balance, leverage, risk, targets)
 - [ ] **Add input icons**: Small icons inside or next to inputs (₿ for symbol, 🎯 for entry, 🛑 for stop loss)
 - [ ] **Signal Parser redesign**: Make it feel like a premium tool — add a gradient accent line, better typography, and a "magic wand" icon animation
-- [ ] **Show risk-reward summary**: Add a mini visual showing risk:reward ratio as a simple bar or gauge below the targets
+- [x] **Show risk-reward summary**: Add a mini visual showing risk:reward ratio as a simple bar or gauge below the targets
 
 ### 6b. Trades Tab
 **Priority: 🟢 Medium**
 
-- [ ] **Empty state redesign**: Replace bland icon + text with an illustrated empty state (use a trading chart illustration)
-- [ ] **Trade card hover effect**: Subtle lift/shadow on hover
-- [ ] **Outcome badges**: Use solid colored pills instead of the complex dynamic class computation
-- [ ] **Timestamp display**: Show relative time ("2h ago") instead of just ID-based ordering
+- [x] **Empty state redesign**: Replace bland icon + text with an illustrated empty state (use a trading chart illustration)
+- [x] **Trade card hover effect**: Subtle lift/shadow on hover
+- [x] **Outcome badges**: Use solid colored pills instead of the complex dynamic class computation
+- [x] **Timestamp display**: Show relative time ("2h ago") instead of just ID-based ordering
 - [ ] **Swipe-to-delete on mobile**: More intuitive than the small trash icon
-- [ ] **Confirmation dialog**: Before deleting a trade or clearing all trades
+- [x] **Confirmation dialog**: Before deleting a trade or clearing all trades
 
 ### 6c. Stats Tab
 **Priority: 🟢 Medium**
 
-- [ ] **Progress card**: Add a gradient ring/donut chart instead of just a progress bar
-- [ ] **Win/Loss/BE cards**: Add sparkline mini-charts or streak indicators
-- [ ] **Heatmap**: Add hover tooltips showing trade details for completed cells
+- [x] **Progress card**: Add a gradient ring/donut chart instead of just a progress bar
+- [x] **Win/Loss/BE cards**: Add sparkline mini-charts or streak indicators
+- [x] **Heatmap**: Add hover tooltips showing trade details for completed cells
 - [ ] **Equity curve chart**: Add a simple line chart showing balance progression over trades (this would be the biggest visual upgrade for this tab)
-- [ ] **Risk Consistency**: Visualize with a gauge/speedometer instead of plain numbers
+- [x] **Risk Consistency**: Visualize with a gauge/speedometer instead of plain numbers
 
 ---
 
