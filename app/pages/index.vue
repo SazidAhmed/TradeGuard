@@ -130,7 +130,7 @@ const copyTarget = async (price: number) => {
     copyMessage.value = `Copied target ${price}`;
     setTimeout(() => {
       copyMessage.value = "";
-    }, 1500);
+    }, 2000);
   } catch {
     copyMessage.value = "Clipboard permission denied.";
   }
@@ -1389,7 +1389,7 @@ watch(
 
       <!-- Global Toast Notification -->
       <div
-        class="fixed bottom-24 left-1/2 z-50 flex -translate-x-1/2 transform items-center gap-2 rounded-full bg-gray-900/90 px-4 py-2 text-sm font-medium text-white shadow-xl backdrop-blur-md transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)]"
+        class="fixed bottom-24 left-1/2 z-[100] flex -translate-x-1/2 transform items-center gap-2 rounded-full bg-gray-900/90 px-4 py-2 text-sm font-medium text-white shadow-xl backdrop-blur-md transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)]"
         :class="copyMessage ? 'translate-y-0 opacity-100 scale-100' : 'translate-y-8 opacity-0 scale-90 pointer-events-none'"
       >
         <Zap class="h-4 w-4 text-emerald-400" />
