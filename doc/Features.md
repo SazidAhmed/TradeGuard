@@ -150,5 +150,11 @@ Architecture note: this project is now local-only and uses Pinia + browser `loca
 - Type/lint diagnostics checked for `tradeguard` Pinia store with no reported issues.
 - Production build validated successfully (`npm run build`).
 
+## 11. Micro-animations & UX Polish (Phase 3)
+- Smooth `fade-slide` transitions implemented for seamless switching between tabs (Calculator, Trades, Stats).
+- Animated slide-in (`list` transition) for new trade cards added to the log.
+- Global toast notifications updated with a modern bounce animation and scaled appearance.
+- Tabular numbers (`tabular-nums`) applied to critical data elements for clean alignment.
+
 ## Not Implemented Yet (Planned Later)
 - Exchange API integration and auto-order execution

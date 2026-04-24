@@ -288,8 +288,10 @@ watch(
         </div>
       </header>
 
-      <!-- CALCULATOR TAB -->
-      <section v-if="activeTab === 'calculator'" class="space-y-3 p-4">
+      <!-- Tab Content Area -->
+      <Transition name="fade-slide" mode="out-in">
+        <!-- CALCULATOR TAB -->
+        <section v-if="activeTab === 'calculator'" class="space-y-3 p-4">
         <!-- Results & Risk Row -->
         <div class="flex gap-2">
           <!-- Results Card -->
@@ -613,8 +615,8 @@ watch(
         </Button>
       </section>
 
-      <!-- TRADES TAB -->
-      <section v-if="activeTab === 'trades'" class="space-y-3 p-4">
+        <!-- TRADES TAB -->
+        <section v-else-if="activeTab === 'trades'" class="space-y-3 p-4">
         <!-- Filter Chips -->
         <div class="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
           <Button
@@ -724,11 +726,12 @@ watch(
         </div>
 
         <!-- Trade Cards -->
-        <div
-          v-for="trade in displayedTrades"
-          :key="trade.id"
-          class="overflow-hidden rounded-xl bg-card border shadow-sm"
-        >
+        <TransitionGroup name="list" tag="div" class="flex flex-col gap-3">
+          <div
+            v-for="trade in displayedTrades"
+            :key="trade.id"
+            class="overflow-hidden rounded-xl bg-card border shadow-sm"
+          >
           <!-- Trade Header -->
           <div class="p-4">
             <div class="flex items-start justify-between">
@@ -923,7 +926,7 @@ watch(
               </Button>
             </div>
           </div>
-        </div>
+        </TransitionGroup>
 
         <!-- Show More Button -->
         <Button
@@ -940,8 +943,8 @@ watch(
         </Button>
       </section>
 
-      <!-- STATS TAB -->
-      <section v-if="activeTab === 'stats'" class="space-y-3 p-4">
+        <!-- STATS TAB -->
+        <section v-else-if="activeTab === 'stats'" class="space-y-3 p-4">
         <!-- Progress Card -->
         <Card
           class="overflow-hidden bg-gradient-to-br from-indigo-600 to-indigo-700 text-white"
@@ -1126,7 +1129,8 @@ watch(
         >
           Clear All App Data
         </Button>
-      </section>
+        </section>
+      </Transition>
 
       <!-- Bottom Navigation -->
       <nav
@@ -1172,8 +1176,8 @@ watch(
       </nav>
       <!-- Global Toast Notification -->
       <div
-        class="fixed bottom-10 left-1/2 z-50 flex -translate-x-1/2 transform items-center gap-2 rounded-full bg-gray-900/90 px-4 py-2 text-sm font-medium text-white shadow-xl backdrop-blur-md transition-all duration-300"
-        :class="copyMessage ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0 pointer-events-none'"
+        class="fixed bottom-24 left-1/2 z-50 flex -translate-x-1/2 transform items-center gap-2 rounded-full bg-gray-900/90 px-4 py-2 text-sm font-medium text-white shadow-xl backdrop-blur-md transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)]"
+        :class="copyMessage ? 'translate-y-0 opacity-100 scale-100' : 'translate-y-8 opacity-0 scale-90 pointer-events-none'"
       >
         <Zap class="h-4 w-4 text-emerald-400" />
         {{ copyMessage }}
