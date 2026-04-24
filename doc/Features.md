@@ -13,6 +13,7 @@ Architecture note: this project is now local-only and uses Pinia + browser `loca
   - Current Balance (auto-compounded from realized PnL)
   - Losses Remaining (based on current balance and current risk)
   - Risk Per Trade
+  - Dark Mode toggle (Sun/Moon icon) with fully responsive theme adapting Semantic colors
 
 ## 2. Smart Calculator Engine
 - Inputs implemented:

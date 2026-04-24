@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { storeToRefs } from "pinia";
 import { onMounted, ref, watch, computed } from "vue";
+import { useDark, useToggle } from "@vueuse/core";
 import {
   Clipboard,
   TriangleAlert,
@@ -20,6 +21,8 @@ import {
   Trophy,
   Target,
   Flame,
+  Sun,
+  Moon,
 } from "lucide-vue-next";
 
 useSeoMeta({
@@ -83,6 +86,9 @@ const targetRatiosInput = computed({
     }
   },
 });
+
+const isDark = useDark();
+const toggleDark = useToggle(isDark);
 
 const activeTab = ref<Tab>("calculator");
 const copyMessage = ref("");
@@ -219,14 +225,14 @@ watch(
 
 <template>
   <div
-    class="min-h-screen bg-gray-50 text-foreground md:flex md:justify-center md:bg-gray-100"
+    class="min-h-screen bg-muted/30 text-foreground md:flex md:items-center md:justify-center"
   >
     <!-- Mobile Container -->
     <main
-      class="relative min-h-screen w-full max-w-md bg-gray-50 pb-20 md:min-h-[800px] md:rounded-2xl md:shadow-2xl"
+      class="relative min-h-screen w-full max-w-md bg-background pb-20 md:h-[800px] md:min-h-0 md:rounded-2xl md:border md:shadow-2xl md:overflow-y-auto"
     >
       <!-- Mobile Header -->
-      <header class="sticky top-0 z-30 bg-white px-4 py-3 shadow-sm">
+      <header class="sticky top-0 z-30 bg-background/95 backdrop-blur px-4 py-3 border-b">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2">
             <div
@@ -234,9 +240,16 @@ watch(
             >
               <Zap class="h-4 w-4 text-white" />
             </div>
-            <span class="text-lg font-bold text-gray-900">TradeGuard</span>
+            <span class="text-lg font-bold">TradeGuard</span>
           </div>
           <div class="flex items-center gap-2">
+            <button
+              @click="toggleDark()"
+              class="flex h-8 w-8 items-center justify-center rounded-full hover:bg-muted transition-colors"
+            >
+              <Moon v-if="!isDark" class="h-4 w-4 text-muted-foreground" />
+              <Sun v-else class="h-4 w-4 text-muted-foreground" />
+            </button>
             <Badge variant="outline" class="text-xs">
               {{ totalTradesCount }}/100
             </Badge>
@@ -274,7 +287,7 @@ watch(
         <div class="flex gap-2">
           <!-- Results Card -->
           <Card
-            class="flex-[1.6] overflow-hidden border-indigo-100 bg-gradient-to-br from-indigo-50 to-white"
+            class="flex-[1.6] overflow-hidden border-indigo-200 dark:border-indigo-900 bg-gradient-to-br from-indigo-50 to-white dark:from-indigo-950/30 dark:to-background"
           >
             <CardContent class="p-3">
               <div class="mb-1 flex items-center justify-between">
@@ -297,7 +310,7 @@ watch(
                   />
                 </div>
               </div>
-              <p class="text-2xl font-bold text-gray-900">
+              <p class="text-2xl font-bold">
                 {{ hasInvalidInputs ? "---" : toFixedNumber(quantityToBuy, 6) }}
               </p>
               <p class="mt-0.5 text-[10px] text-muted-foreground">
@@ -309,22 +322,22 @@ watch(
           <!-- Risk Summary Vertical -->
           <div class="flex flex-1 flex-col gap-2">
             <div
-              class="flex-1 rounded-xl border border-gray-100 bg-white p-2.5 shadow-sm"
+              class="flex-1 rounded-xl border bg-card p-2.5 shadow-sm"
             >
               <p class="text-[10px] font-medium text-muted-foreground">
                 Risk/Unit
               </p>
-              <p class="text-sm font-bold text-gray-900">
+              <p class="text-sm font-bold">
                 {{ hasInvalidInputs ? "---" : toFixedNumber(riskPerUnit, 4) }}
               </p>
             </div>
             <div
-              class="flex-1 rounded-xl border border-gray-100 bg-white p-2.5 shadow-sm"
+              class="flex-1 rounded-xl border bg-card p-2.5 shadow-sm"
             >
               <p class="text-[10px] font-medium text-muted-foreground">
                 Risk Amount
               </p>
-              <p class="text-sm font-bold text-gray-900">
+              <p class="text-sm font-bold">
                 {{ hasInvalidInputs ? "---" : formatMoney(riskAmount) }}
               </p>
             </div>
@@ -332,7 +345,7 @@ watch(
         </div>
 
         <!-- Signal Parser (Collapsible) -->
-        <div class="rounded-xl bg-white shadow-sm">
+        <div class="rounded-xl bg-card border shadow-sm">
           <button
             class="flex w-full items-center justify-between p-4"
             @click="showSignalParser = !showSignalParser"
@@ -665,12 +678,12 @@ watch(
         <!-- Empty State -->
         <div
           v-if="tradeLog.length === 0"
-          class="rounded-xl border border-dashed bg-white p-8 text-center"
+          class="rounded-xl border border-dashed bg-card p-8 text-center"
         >
           <div
-            class="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-gray-100"
+            class="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-muted"
           >
-            <List class="h-6 w-6 text-gray-400" />
+            <List class="h-6 w-6 text-muted-foreground" />
           </div>
           <p class="text-sm text-muted-foreground">No trades yet</p>
           <p class="text-xs text-muted-foreground">
@@ -682,7 +695,7 @@ watch(
         <div
           v-for="trade in displayedTrades"
           :key="trade.id"
-          class="overflow-hidden rounded-xl bg-white shadow-sm"
+          class="overflow-hidden rounded-xl bg-card border shadow-sm"
         >
           <!-- Trade Header -->
           <div class="p-4">
@@ -725,17 +738,17 @@ watch(
 
             <!-- Trade Details -->
             <div class="mt-3 grid grid-cols-3 gap-2 text-center">
-              <div class="rounded-lg bg-gray-50 p-2">
+              <div class="rounded-lg bg-muted/50 p-2">
                 <p class="text-xs text-muted-foreground">Qty</p>
                 <p class="font-medium">{{ formatNumber(trade.quantity, 2) }}</p>
               </div>
-              <div class="rounded-lg bg-gray-50 p-2">
+              <div class="rounded-lg bg-muted/50 p-2">
                 <p class="text-xs text-muted-foreground">Size ({{ trade.leverage }}x)</p>
                 <p class="font-medium">
                   {{ formatCompactMoney(trade.positionSizeUSDT) }}
                 </p>
               </div>
-              <div class="rounded-lg bg-gray-50 p-2">
+              <div class="rounded-lg bg-muted/50 p-2">
                 <p class="text-xs text-muted-foreground">Risk</p>
                 <p class="font-medium">
                   {{ formatCompactMoney(trade.riskAmount) }}
@@ -751,8 +764,8 @@ watch(
                 class="flex-1 rounded-lg py-1.5 text-center text-xs"
                 :class="
                   trade.targetHitMultiple === idx + 1
-                    ? 'bg-emerald-100 text-emerald-700'
-                    : 'bg-gray-100 text-muted-foreground'
+                    ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300'
+                    : 'bg-muted text-muted-foreground'
                 "
               >
                 {{ idx + 1 }}R: {{ formatNumber(target, 3) }}
@@ -761,7 +774,7 @@ watch(
           </div>
 
           <!-- Trade Actions -->
-          <div class="border-t bg-gray-50/50 p-3">
+          <div class="border-t bg-muted/30 p-3">
             <div class="mb-2 flex gap-2">
               <Button
                 size="sm"
