@@ -940,38 +940,38 @@ watch(
 
         <!-- Quick Stats Grid -->
         <div class="grid grid-cols-3 gap-2">
-          <div class="rounded-xl bg-white p-3 text-center shadow-sm">
+          <div class="rounded-xl bg-card border p-3 text-center shadow-sm">
             <div
-              class="mx-auto mb-1 flex h-8 w-8 items-center justify-center rounded-full bg-emerald-100"
+              class="mx-auto mb-1 flex h-8 w-8 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-900/50"
             >
-              <span class="text-sm font-bold text-emerald-600">W</span>
+              <span class="text-sm font-bold text-emerald-600 dark:text-emerald-400">W</span>
             </div>
-            <p class="text-xl font-bold">{{ winsCount }}</p>
+            <p class="text-xl font-bold dark:text-white">{{ winsCount }}</p>
             <p class="text-xs text-muted-foreground">Wins</p>
           </div>
-          <div class="rounded-xl bg-white p-3 text-center shadow-sm">
+          <div class="rounded-xl bg-card border p-3 text-center shadow-sm">
             <div
-              class="mx-auto mb-1 flex h-8 w-8 items-center justify-center rounded-full bg-red-100"
+              class="mx-auto mb-1 flex h-8 w-8 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/50"
             >
-              <span class="text-sm font-bold text-red-600">L</span>
+              <span class="text-sm font-bold text-red-600 dark:text-red-400">L</span>
             </div>
-            <p class="text-xl font-bold">{{ lossesCount }}</p>
+            <p class="text-xl font-bold dark:text-white">{{ lossesCount }}</p>
             <p class="text-xs text-muted-foreground">Losses</p>
           </div>
-          <div class="rounded-xl bg-white p-3 text-center shadow-sm">
+          <div class="rounded-xl bg-card border p-3 text-center shadow-sm">
             <div
-              class="mx-auto mb-1 flex h-8 w-8 items-center justify-center rounded-full bg-amber-100"
+              class="mx-auto mb-1 flex h-8 w-8 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900/50"
             >
-              <span class="text-sm font-bold text-amber-600">BE</span>
+              <span class="text-sm font-bold text-amber-600 dark:text-amber-400">BE</span>
             </div>
-            <p class="text-xl font-bold">{{ breakevenCount }}</p>
+            <p class="text-xl font-bold dark:text-white">{{ breakevenCount }}</p>
             <p class="text-xs text-muted-foreground">Breakeven</p>
           </div>
         </div>
 
         <!-- Win Rate & Net R -->
         <div class="grid grid-cols-2 gap-2">
-          <div class="rounded-xl bg-white p-3 shadow-sm">
+          <div class="rounded-xl bg-card border p-3 shadow-sm">
             <p class="text-xs text-muted-foreground">Win Rate</p>
             <p
               class="text-2xl font-bold"
@@ -980,7 +980,7 @@ watch(
               {{ formatNumber(winRate, 1) }}%
             </p>
           </div>
-          <div class="rounded-xl bg-white p-3 shadow-sm">
+          <div class="rounded-xl bg-card border p-3 shadow-sm">
             <p class="text-xs text-muted-foreground">Net R</p>
             <p
               class="text-2xl font-bold"
@@ -1003,7 +1003,7 @@ watch(
                 <span class="text-xs text-muted-foreground"
                   >Avg Risk/Trade</span
                 >
-                <span class="font-semibold">{{
+                <span class="font-semibold dark:text-white">{{
                   formatMoney(averageRiskPerTrade)
                 }}</span>
               </div>
@@ -1054,7 +1054,7 @@ watch(
                 :key="cell.id"
                 class="aspect-square rounded-sm"
                 :class="{
-                  'bg-gray-200': cell.outcome === 'Pending',
+                  'bg-muted': cell.outcome === 'Pending',
                   'bg-emerald-500': cell.outcome === 'Win',
                   'bg-red-500': cell.outcome === 'Loss',
                   'bg-amber-400': cell.outcome === 'Breakeven',
@@ -1081,7 +1081,7 @@ watch(
                 <span>Open</span>
               </div>
               <div class="flex items-center gap-1">
-                <div class="h-3 w-3 rounded bg-gray-200" />
+                <div class="h-3 w-3 rounded bg-muted" />
                 <span>Pending</span>
               </div>
             </div>
