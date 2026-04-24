@@ -938,7 +938,7 @@ watch(
             <div class="mt-3 grid grid-cols-3 gap-2 text-center">
               <div class="rounded-lg bg-muted/50 p-2">
                 <p class="text-xs text-muted-foreground">Qty</p>
-                <p class="font-medium">{{ formatNumber(trade.quantity, 2) }}</p>
+                <p class="font-medium tabular-nums">{{ formatNumber(trade.quantity, 4) }}</p>
               </div>
               <div class="rounded-lg bg-muted/50 p-2">
                 <p class="text-xs text-muted-foreground">Size ({{ trade.leverage }}x)</p>
