@@ -19,7 +19,7 @@ export interface TradeLogEntry {
   riskPerUnit: number
   quantity: number
   positionSizeUSDT: number
-  targets: number[]
+  targets: { multiple: number; price: number }[]
   actualRiskUsed: number
   targetHitMultiple: number | null
   outcome: TradeOutcome
@@ -261,7 +261,7 @@ export const useTradeguardStore = defineStore("tradeguard", {
         riskPerUnit: toFixedNumber(this.riskPerUnit),
         quantity: toFixedNumber(this.quantityToBuy, QUANTITY_DECIMALS),
         positionSizeUSDT: toFixedNumber(this.totalCostUSDT, 4),
-        targets: this.targets.map(item => item.price),
+        targets: this.targets.map(item => ({ multiple: item.multiple, price: item.price })),
         actualRiskUsed: toFixedNumber(this.riskAmount, 4),
         targetHitMultiple: null,
         outcome: "Open",

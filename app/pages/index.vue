@@ -957,16 +957,16 @@ watch(
             <!-- Targets -->
             <div class="mt-3 flex gap-1">
               <div
-                v-for="(target, idx) in trade.targets"
-                :key="idx"
+                v-for="target in trade.targets"
+                :key="target.multiple"
                 class="flex-1 rounded-lg py-1.5 text-center text-xs"
                 :class="
-                  trade.targetHitMultiple === idx + 1
+                  trade.targetHitMultiple === target.multiple
                     ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300'
                     : 'bg-muted text-muted-foreground'
                 "
               >
-                {{ idx + 1 }}R: {{ formatNumber(target, 3) }}
+                {{ target.multiple }}R: {{ formatNumber(target.price, 3) }}
               </div>
             </div>
           </div>
@@ -1038,31 +1038,15 @@ watch(
               />
               <div class="flex flex-1 gap-1">
                 <Button
+                  v-for="target in trade.targets"
+                  :key="target.multiple"
                   size="sm"
                   variant="outline"
                   class="flex-1 px-1 h-8 text-[10px]"
-                  :class="trade.targetHitMultiple === 1 ? 'bg-emerald-100 text-emerald-700 border-emerald-200' : ''"
-                  @click="store.setTargetHitMultiple(trade.id, 1)"
+                  :class="trade.targetHitMultiple === target.multiple ? 'bg-emerald-100 text-emerald-700 border-emerald-200' : ''"
+                  @click="store.setTargetHitMultiple(trade.id, target.multiple)"
                 >
-                  1R
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  class="flex-1 px-1 h-8 text-[10px]"
-                  :class="trade.targetHitMultiple === 2 ? 'bg-emerald-100 text-emerald-700 border-emerald-200' : ''"
-                  @click="store.setTargetHitMultiple(trade.id, 2)"
-                >
-                  2R
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  class="flex-1 px-1 h-8 text-[10px]"
-                  :class="trade.targetHitMultiple === 3 ? 'bg-emerald-100 text-emerald-700 border-emerald-200' : ''"
-                  @click="store.setTargetHitMultiple(trade.id, 3)"
-                >
-                  3R
+                  {{ target.multiple }}R
                 </Button>
               </div>
             </div>
