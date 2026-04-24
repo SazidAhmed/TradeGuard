@@ -5,24 +5,24 @@ This document lists features that are already implemented in the current fronten
 Architecture note: this project is now local-only and uses Pinia + browser `localStorage` (no backend/database).
 
 ## 1. App Shell and Navigation
-- Sidebar layout implemented with:
-  - `Calculator` (active)
-  - `Journal (Phase 2)` placeholder
-  - `Analytics (Phase 2)` placeholder
+- UI completely redesigned with a "mobile-first" high-end aesthetic:
+  - Bottom Navigation bar replacing the old sidebar, featuring app-like active state pills for `Calc`, `Trades`, and `Stats`.
+  - Desktop layout uses a centered `max-w-lg` container floating over a decorative, glowing radial gradient background.
+  - Custom sleek scrollbars and full `Inter` font integration with tabular numbers for data.
 - Sticky top bar implemented with live survival stats:
   - Current Balance (auto-compounded from realized PnL)
   - Losses Remaining (based on current balance and current risk)
   - Risk Per Trade
-  - Dark Mode toggle (Sun/Moon icon) with fully responsive theme adapting Semantic colors
+  - Dark Mode toggle (Sun/Moon icon) with fully responsive theme adapting Semantic colors, tuned with a premium blue/indigo dark theme.
 
 ## 2. Smart Calculator Engine
 - Inputs implemented:
   - Symbol (e.g., `AVNTUSDT`)
-  - Direction (`Long` / `Short`)
+  - Direction (Animated Long/Short sliding toggle)
   - Entry Price
   - Stop Loss
   - Account Balance
-  - Leverage Slider (1x - 100x)
+  - Leverage Slider (1x - 100x) with quick-select shortcuts (1x, 10x, 50x, 100x)
   - Risk Value
 - Core calculations implemented in real time:
   - Risk Amount (dynamic by risk mode)
@@ -60,17 +60,14 @@ Architecture note: this project is now local-only and uses Pinia + browser `loca
 - Visual warning state implemented on the execution card when inputs are invalid or margin is insufficient.
 
 ## 5. Execution Card
-- Implemented output card with:
+- Implemented redesigned output card with a gradient accent line and glassmorphic stats:
   - Risk Per Unit
   - Risk Amount
-  - Quantity to Buy
+  - Quantity to Buy (featured prominently with tabular data styling)
   - Total Position Size (USDT)
-- Target action buttons implemented:
-  - `Set 1:1 Target`
-  - `Set 1:2 Target`
-  - `Set 1:3 Target`
+- Target action buttons implemented as sleek color-coded tags (1R, 2R, etc.) with hover states.
 - Action feedback implemented with sleek floating Toast notifications.
-- Trade snapshot logging action implemented directly from the execution card.
+- Trade snapshot logging action implemented directly from the execution card via a vibrant indigo-to-violet gradient button with hover shimmer animation.
 
 ## 6. Signal Parser (Quick Paste)
 - Text area and parse action implemented for pasted trading signals.

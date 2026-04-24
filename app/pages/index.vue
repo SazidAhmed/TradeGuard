@@ -225,11 +225,18 @@ watch(
 
 <template>
   <div
-    class="min-h-screen bg-muted/30 text-foreground md:flex md:items-center md:justify-center"
+    class="min-h-screen text-foreground md:flex md:items-center md:justify-center relative overflow-hidden bg-muted/20 dark:bg-background"
   >
+    <!-- Decorative Desktop Background -->
+    <div class="hidden md:block absolute inset-0 pointer-events-none -z-10">
+      <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-100/50 via-background to-background dark:from-indigo-900/20 dark:via-background dark:to-background"></div>
+      <div class="absolute -top-[20%] -right-[10%] w-[50%] h-[50%] rounded-full bg-indigo-500/10 dark:bg-indigo-500/5 blur-[120px]"></div>
+      <div class="absolute -bottom-[20%] -left-[10%] w-[50%] h-[50%] rounded-full bg-violet-500/10 dark:bg-violet-500/5 blur-[120px]"></div>
+    </div>
+
     <!-- Mobile Container -->
     <main
-      class="relative min-h-screen w-full max-w-md bg-background pb-20 md:h-[800px] md:min-h-0 md:rounded-2xl md:border md:shadow-2xl md:overflow-y-auto md:pb-0"
+      class="relative z-10 min-h-screen w-full max-w-[500px] bg-background pb-20 md:max-h-[90vh] md:min-h-0 md:rounded-2xl md:border md:shadow-2xl dark:md:shadow-indigo-900/20 md:overflow-y-auto md:pb-0"
     >
       <!-- Mobile Header -->
       <header class="sticky top-0 z-30 bg-background/95 backdrop-blur px-4 py-3 border-b">
@@ -287,57 +294,71 @@ watch(
         <div class="flex gap-2">
           <!-- Results Card -->
           <Card
-            class="flex-[1.6] overflow-hidden border-indigo-200 dark:border-indigo-900 bg-gradient-to-br from-indigo-50 to-white dark:from-indigo-950/30 dark:to-background"
+            class="flex-[1.6] overflow-hidden relative border-indigo-200 dark:border-indigo-900 bg-gradient-to-br from-indigo-50 to-white dark:from-indigo-950/30 dark:to-background/50 shadow-sm"
           >
-            <CardContent class="p-3">
+            <!-- Accent Line -->
+            <div class="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-indigo-400 to-violet-500"></div>
+            
+            <CardContent class="p-3 pl-4">
               <div class="mb-1 flex items-center justify-between">
                 <span
-                  class="text-[10px] font-semibold text-muted-foreground tracking-tight"
+                  class="text-[10px] font-bold uppercase tracking-wider text-muted-foreground"
                   >QUANTITY TO BUY</span
                 >
                 <div
-                  class="flex h-5 w-5 items-center justify-center rounded-full"
+                  class="flex h-5 w-5 items-center justify-center rounded-full transition-colors duration-300 shadow-sm"
                   :class="
-                    direction === 'long' ? 'bg-emerald-100' : 'bg-red-100'
+                    direction === 'long' ? 'bg-emerald-100 shadow-emerald-500/20' : 'bg-red-100 shadow-red-500/20'
                   "
                 >
                   <component
                     :is="direction === 'long' ? TrendingUp : TrendingDown"
-                    class="h-2.5 w-2.5"
+                    class="h-3 w-3"
                     :class="
                       direction === 'long' ? 'text-emerald-600' : 'text-red-600'
                     "
                   />
                 </div>
               </div>
-              <p class="text-2xl font-bold dark:text-white">
-                {{ hasInvalidInputs ? "---" : toFixedNumber(quantityToBuy, 6) }}
-              </p>
-              <p class="mt-0.5 text-[10px] text-muted-foreground">
-                Pos: {{ hasInvalidInputs ? "---" : formatMoney(totalCostUSDT) }} &bull; Margin: {{ hasInvalidInputs ? "---" : formatMoney(marginRequiredUSDT) }}
-              </p>
+              <div class="flex items-baseline gap-1">
+                <p class="text-3xl font-black tabular-nums tracking-tight dark:text-white transition-all duration-300">
+                  {{ hasInvalidInputs ? "---" : toFixedNumber(quantityToBuy, 6) }}
+                </p>
+              </div>
+              <div class="mt-1 flex flex-col gap-0.5 text-[10px] font-medium text-muted-foreground">
+                <div class="flex items-center gap-1.5">
+                  <div class="w-1.5 h-1.5 rounded-full bg-indigo-400"></div>
+                  <span>Pos: <strong class="text-foreground/80 font-semibold">{{ hasInvalidInputs ? "---" : formatMoney(totalCostUSDT) }}</strong></span>
+                </div>
+                <div class="flex items-center gap-1.5">
+                  <div class="w-1.5 h-1.5 rounded-full bg-violet-400"></div>
+                  <span>Margin: <strong class="text-foreground/80 font-semibold">{{ hasInvalidInputs ? "---" : formatMoney(marginRequiredUSDT) }}</strong></span>
+                </div>
+              </div>
             </CardContent>
           </Card>
 
           <!-- Risk Summary Vertical -->
           <div class="flex flex-1 flex-col gap-2">
             <div
-              class="flex-1 rounded-xl border bg-card p-2.5 shadow-sm"
+              class="flex-1 rounded-xl border bg-card/50 p-2.5 shadow-sm relative overflow-hidden flex flex-col justify-center"
             >
-              <p class="text-[10px] font-medium text-muted-foreground">
+              <div class="absolute inset-0 bg-gradient-to-br from-transparent to-black/[0.02] dark:to-white/[0.02] pointer-events-none"></div>
+              <p class="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                 Risk/Unit
               </p>
-              <p class="text-sm font-bold dark:text-white">
+              <p class="text-sm font-bold tabular-nums dark:text-white mt-0.5">
                 {{ hasInvalidInputs ? "---" : toFixedNumber(riskPerUnit, 4) }}
               </p>
             </div>
             <div
-              class="flex-1 rounded-xl border bg-card p-2.5 shadow-sm"
+              class="flex-1 rounded-xl border bg-card/50 p-2.5 shadow-sm relative overflow-hidden flex flex-col justify-center"
             >
-              <p class="text-[10px] font-medium text-muted-foreground">
-                Risk Amount
+              <div class="absolute inset-0 bg-gradient-to-br from-transparent to-black/[0.02] dark:to-white/[0.02] pointer-events-none"></div>
+              <p class="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                Risk Amt
               </p>
-              <p class="text-sm font-bold dark:text-white">
+              <p class="text-sm font-bold tabular-nums mt-0.5" :class="hasInvalidInputs ? 'text-muted-foreground' : 'text-red-600 dark:text-red-400'">
                 {{ hasInvalidInputs ? "---" : formatMoney(riskAmount) }}
               </p>
             </div>
@@ -404,32 +425,30 @@ watch(
                 />
               </div>
               <div>
-                <Label class="mb-1.5 block text-xs font-medium">Side</Label>
-                <div class="flex rounded-lg border p-1">
-                  <Button
-                    size="sm"
-                    :variant="direction === 'long' ? 'default' : 'ghost'"
-                    class="h-8 px-3 text-xs dark:text-white"
-                    :class="
-                      direction === 'long'
-                        ? 'bg-emerald-600 text-white hover:bg-emerald-700'
-                        : ''
-                    "
+                <Label class="mb-1.5 block text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Side</Label>
+                <div class="relative flex h-[38px] rounded-xl border bg-muted/30 p-1 shadow-sm">
+                  <!-- Sliding Background -->
+                  <div
+                    class="absolute inset-y-1 w-[calc(50%-4px)] rounded-lg shadow-sm transition-all duration-300"
+                    :class="direction === 'long' ? 'left-1 bg-emerald-500 shadow-emerald-500/20' : 'left-[calc(50%+2px)] bg-red-500 shadow-red-500/20'"
+                  ></div>
+                  
+                  <button
+                    class="relative z-10 flex flex-1 items-center justify-center gap-1.5 rounded-lg text-xs font-bold transition-colors duration-300"
+                    :class="direction === 'long' ? 'text-white' : 'text-muted-foreground hover:text-foreground'"
                     @click="direction = 'long'"
                   >
+                    <TrendingUp class="h-3.5 w-3.5" />
                     Long
-                  </Button>
-                  <Button
-                    size="sm"
-                    :variant="direction === 'short' ? 'default' : 'ghost'"
-                    class="h-8 px-3 text-xs dark:text-white"
-                    :class="
-                      direction === 'short' ? 'bg-red-600 text-white hover:bg-red-700' : ''
-                    "
+                  </button>
+                  <button
+                    class="relative z-10 flex flex-1 items-center justify-center gap-1.5 rounded-lg text-xs font-bold transition-colors duration-300"
+                    :class="direction === 'short' ? 'text-white' : 'text-muted-foreground hover:text-foreground'"
                     @click="direction = 'short'"
                   >
+                    <TrendingDown class="h-3.5 w-3.5" />
                     Short
-                  </Button>
+                  </button>
                 </div>
               </div>
             </div>
@@ -474,18 +493,26 @@ watch(
                 />
               </div>
               <div>
-                <Label class="mb-1.5 flex justify-between text-xs font-medium">
+                <Label class="mb-1.5 flex justify-between text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                   <span>Leverage</span>
-                  <span class="text-indigo-600">{{ leverage }}x</span>
+                  <span class="text-indigo-600 dark:text-indigo-400 font-bold">{{ leverage }}x</span>
                 </Label>
-                <div class="flex h-11 items-center px-1">
-                  <input
-                    v-model.number="leverage"
-                    type="range"
-                    min="1"
-                    max="100"
-                    class="w-full accent-indigo-600"
-                  />
+                <div class="flex flex-col gap-1.5">
+                  <div class="flex h-6 items-center px-1">
+                    <input
+                      v-model.number="leverage"
+                      type="range"
+                      min="1"
+                      max="100"
+                      class="w-full accent-indigo-600 cursor-pointer"
+                    />
+                  </div>
+                  <div class="flex gap-1">
+                    <button class="flex-1 rounded border border-input bg-muted/20 py-0.5 text-[10px] font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground" @click="leverage = 1">1x</button>
+                    <button class="flex-1 rounded border border-input bg-muted/20 py-0.5 text-[10px] font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground" @click="leverage = 10">10x</button>
+                    <button class="flex-1 rounded border border-input bg-muted/20 py-0.5 text-[10px] font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground" @click="leverage = 50">50x</button>
+                    <button class="flex-1 rounded border border-input bg-muted/20 py-0.5 text-[10px] font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground" @click="leverage = 100">100x</button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -564,21 +591,24 @@ watch(
             :key="item.multiple"
             variant="outline"
             size="sm"
-            class="border-indigo-200 dark:border-indigo-800 text-xs dark:text-white"
+            class="relative overflow-hidden border-indigo-200 dark:border-indigo-800 text-xs dark:text-white group hover:border-indigo-400 dark:hover:border-indigo-500 transition-all duration-300 shadow-sm bg-background/50 hover:bg-background"
             @click="copyTarget(item.price)"
           >
-            <Clipboard class="mr-1 h-3 w-3" />
-            {{ item.multiple }}R: {{ formatNumber(item.price, 4) }}
+            <div class="absolute inset-0 opacity-[0.08] dark:opacity-[0.15] transition-opacity group-hover:opacity-20 dark:group-hover:opacity-30" 
+                 :class="item.multiple === 1 ? 'bg-blue-500' : item.multiple === 2 ? 'bg-indigo-500' : 'bg-violet-500'"></div>
+            <span class="font-bold mr-1" :class="item.multiple === 1 ? 'text-blue-600 dark:text-blue-400' : item.multiple === 2 ? 'text-indigo-600 dark:text-indigo-400' : 'text-violet-600 dark:text-violet-400'">{{ item.multiple }}R</span>
+            <span class="tabular-nums font-medium">{{ formatNumber(item.price, 4) }}</span>
           </Button>
         </div>
 
         <!-- Log Trade Button -->
         <Button
           :disabled="hasInvalidInputs || hasInsufficientMargin"
-          class="w-full h-12 text-base font-medium bg-indigo-600 text-white hover:bg-indigo-700 dark:bg-indigo-600 dark:text-white dark:hover:bg-indigo-700"
+          class="relative w-full h-12 text-base font-bold bg-gradient-to-r from-indigo-600 to-violet-600 text-white hover:from-indigo-500 hover:to-violet-500 dark:from-indigo-600 dark:to-violet-600 dark:text-white dark:hover:from-indigo-500 dark:hover:to-violet-500 border-0 shadow-lg shadow-indigo-500/25 overflow-hidden group transition-all duration-300 disabled:opacity-50 disabled:shadow-none"
           @click="() => { store.logTradeSnapshot(); copyMessage = 'Trade logged!'; setTimeout(() => copyMessage = '', 2000); }"
         >
-          <Plus class="mr-2 h-5 w-5" />
+          <div class="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent group-hover:animate-[shimmer_1.5s_infinite]"></div>
+          <Plus class="mr-2 h-5 w-5 transition-transform group-hover:rotate-90 duration-300" />
           Log Trade
         </Button>
       </section>
@@ -1100,51 +1130,43 @@ watch(
 
       <!-- Bottom Navigation -->
       <nav
-        class="fixed bottom-0 left-0 right-0 z-50 border-t bg-background md:sticky md:bottom-0 md:rounded-b-2xl"
+        class="fixed bottom-0 left-0 right-0 z-50 border-t bg-background/95 backdrop-blur md:sticky md:bottom-0 md:rounded-b-2xl pb-safe"
       >
-        <div class="mx-auto flex max-w-md">
+        <div class="mx-auto flex h-16 max-w-lg items-center px-2">
           <button
-            class="flex flex-1 flex-col items-center gap-1 py-3 transition-colors"
-            :class="
-              activeTab === 'calculator' ? 'text-indigo-600 dark:text-indigo-400' : 'text-muted-foreground'
-            "
+            class="relative flex flex-1 flex-col items-center justify-center gap-1 h-full rounded-xl transition-all duration-300"
+            :class="activeTab === 'calculator' ? 'text-indigo-600 dark:text-indigo-400' : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'"
             @click="activeTab = 'calculator'"
           >
-            <Calculator
-              class="h-5 w-5"
-              :stroke-width="activeTab === 'calculator' ? 2.5 : 2"
-            />
-            <span class="text-xs font-medium">Calc</span>
+            <div class="absolute inset-2 rounded-lg bg-indigo-100 dark:bg-indigo-500/20 transition-opacity duration-300" :class="activeTab === 'calculator' ? 'opacity-100' : 'opacity-0 scale-95'"></div>
+            <Calculator class="relative z-10 h-5 w-5" :stroke-width="activeTab === 'calculator' ? 2.5 : 2" />
+            <span class="relative z-10 text-[10px] font-bold">Calc</span>
           </button>
+          
           <button
-            class="flex flex-1 flex-col items-center gap-1 py-3 transition-colors"
-            :class="
-              activeTab === 'trades' ? 'text-indigo-600 dark:text-indigo-400' : 'text-muted-foreground'
-            "
+            class="relative flex flex-1 flex-col items-center justify-center gap-1 h-full rounded-xl transition-all duration-300"
+            :class="activeTab === 'trades' ? 'text-indigo-600 dark:text-indigo-400' : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'"
             @click="activeTab = 'trades'"
           >
-            <List
-              class="h-5 w-5"
-              :stroke-width="activeTab === 'trades' ? 2.5 : 2"
-            />
-            <span class="text-xs font-medium">Trades</span>
+            <div class="absolute inset-2 rounded-lg bg-indigo-100 dark:bg-indigo-500/20 transition-opacity duration-300" :class="activeTab === 'trades' ? 'opacity-100' : 'opacity-0 scale-95'"></div>
+            <List class="relative z-10 h-5 w-5" :stroke-width="activeTab === 'trades' ? 2.5 : 2" />
+            <span class="relative z-10 text-[10px] font-bold">Trades</span>
             <span
               v-if="tradeLog.length > 0"
-              class="absolute top-2 ml-6 flex h-4 w-4 items-center justify-center rounded-full bg-indigo-600 text-[10px] font-bold text-white"
+              class="absolute top-2 right-[calc(50%-18px)] z-20 flex h-4 w-4 items-center justify-center rounded-full bg-indigo-600 text-[9px] font-black text-white shadow-sm ring-2 ring-background"
             >
               {{ tradeLog.length }}
             </span>
           </button>
+          
           <button
-            class="flex flex-1 flex-col items-center gap-1 py-3 transition-colors"
-            :class="activeTab === 'stats' ? 'text-indigo-600 dark:text-indigo-400' : 'text-muted-foreground'"
+            class="relative flex flex-1 flex-col items-center justify-center gap-1 h-full rounded-xl transition-all duration-300"
+            :class="activeTab === 'stats' ? 'text-indigo-600 dark:text-indigo-400' : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'"
             @click="activeTab = 'stats'"
           >
-            <BarChart3
-              class="h-5 w-5"
-              :stroke-width="activeTab === 'stats' ? 2.5 : 2"
-            />
-            <span class="text-xs font-medium">Stats</span>
+            <div class="absolute inset-2 rounded-lg bg-indigo-100 dark:bg-indigo-500/20 transition-opacity duration-300" :class="activeTab === 'stats' ? 'opacity-100' : 'opacity-0 scale-95'"></div>
+            <BarChart3 class="relative z-10 h-5 w-5" :stroke-width="activeTab === 'stats' ? 2.5 : 2" />
+            <span class="relative z-10 text-[10px] font-bold">Stats</span>
           </button>
         </div>
       </nav>
