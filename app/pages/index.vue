@@ -262,13 +262,13 @@ watch(
         >
           <span
             >Balance:
-            <strong :class="currentBalance >= accountBalance ? 'text-emerald-600' : 'text-gray-900'">{{
+            <strong :class="currentBalance >= accountBalance ? 'text-emerald-600' : 'text-gray-900 dark:text-white'">{{
               formatCompactMoney(currentBalance)
             }}</strong></span
           >
           <span
             >Risk:
-            <strong class="text-gray-900">{{
+            <strong class="text-gray-900 dark:text-white">{{
               formatCompactMoney(riskAmount)
             }}</strong></span
           >
@@ -310,7 +310,7 @@ watch(
                   />
                 </div>
               </div>
-              <p class="text-2xl font-bold">
+              <p class="text-2xl font-bold dark:text-white">
                 {{ hasInvalidInputs ? "---" : toFixedNumber(quantityToBuy, 6) }}
               </p>
               <p class="mt-0.5 text-[10px] text-muted-foreground">
@@ -327,7 +327,7 @@ watch(
               <p class="text-[10px] font-medium text-muted-foreground">
                 Risk/Unit
               </p>
-              <p class="text-sm font-bold">
+              <p class="text-sm font-bold dark:text-white">
                 {{ hasInvalidInputs ? "---" : toFixedNumber(riskPerUnit, 4) }}
               </p>
             </div>
@@ -337,7 +337,7 @@ watch(
               <p class="text-[10px] font-medium text-muted-foreground">
                 Risk Amount
               </p>
-              <p class="text-sm font-bold">
+              <p class="text-sm font-bold dark:text-white">
                 {{ hasInvalidInputs ? "---" : formatMoney(riskAmount) }}
               </p>
             </div>
@@ -400,7 +400,7 @@ watch(
                   v-model="symbol"
                   type="text"
                   placeholder="e.g. BTCUSDT"
-                  class="h-11"
+                  class="h-11 dark:text-white"
                 />
               </div>
               <div>
@@ -409,10 +409,10 @@ watch(
                   <Button
                     size="sm"
                     :variant="direction === 'long' ? 'default' : 'ghost'"
-                    class="h-8 px-3 text-xs"
+                    class="h-8 px-3 text-xs dark:text-white"
                     :class="
                       direction === 'long'
-                        ? 'bg-emerald-600 hover:bg-emerald-700'
+                        ? 'bg-emerald-600 text-white hover:bg-emerald-700'
                         : ''
                     "
                     @click="direction = 'long'"
@@ -422,9 +422,9 @@ watch(
                   <Button
                     size="sm"
                     :variant="direction === 'short' ? 'default' : 'ghost'"
-                    class="h-8 px-3 text-xs"
+                    class="h-8 px-3 text-xs dark:text-white"
                     :class="
-                      direction === 'short' ? 'bg-red-600 hover:bg-red-700' : ''
+                      direction === 'short' ? 'bg-red-600 text-white hover:bg-red-700' : ''
                     "
                     @click="direction = 'short'"
                   >
@@ -444,7 +444,7 @@ watch(
                   v-model="entryPrice"
                   type="number"
                   step="any"
-                  class="h-11"
+                  class="h-11 dark:text-white"
                 />
               </div>
               <div>
@@ -455,7 +455,7 @@ watch(
                   v-model="stopLoss"
                   type="number"
                   step="any"
-                  class="h-11"
+                  class="h-11 dark:text-white"
                 />
               </div>
             </div>
@@ -470,7 +470,7 @@ watch(
                   v-model="accountBalance"
                   type="number"
                   step="any"
-                  class="h-11"
+                  class="h-11 dark:text-white"
                 />
               </div>
               <div>
@@ -501,13 +501,14 @@ watch(
                   type="number"
                   min="0"
                   step="any"
-                  class="h-11 flex-1"
+                  class="h-11 flex-1 dark:text-white"
                 />
                 <div class="flex rounded-lg border p-1">
                   <Button
                     size="sm"
                     :variant="riskMode === 'percent' ? 'default' : 'ghost'"
-                    class="h-8 w-10 text-xs"
+                    class="h-8 w-10 text-xs dark:text-white"
+                    :class="riskMode === 'percent' ? 'bg-indigo-600 text-white hover:bg-indigo-700' : ''"
                     @click="riskMode = 'percent'"
                   >
                     %
@@ -515,7 +516,8 @@ watch(
                   <Button
                     size="sm"
                     :variant="riskMode === 'fixed' ? 'default' : 'ghost'"
-                    class="h-8 w-10 text-xs"
+                    class="h-8 w-10 text-xs dark:text-white"
+                    :class="riskMode === 'fixed' ? 'bg-indigo-600 text-white hover:bg-indigo-700' : ''"
                     @click="riskMode = 'fixed'"
                   >
                     $
@@ -533,7 +535,7 @@ watch(
                 v-model="targetRatiosInput"
                 type="text"
                 placeholder="1, 2, 3"
-                class="h-11"
+                class="h-11 dark:text-white"
               />
             </div>
 
@@ -562,7 +564,7 @@ watch(
             :key="item.multiple"
             variant="outline"
             size="sm"
-            class="border-indigo-200 text-xs"
+            class="border-indigo-200 dark:border-indigo-800 text-xs dark:text-white"
             @click="copyTarget(item.price)"
           >
             <Clipboard class="mr-1 h-3 w-3" />
@@ -973,7 +975,7 @@ watch(
             <p class="text-xs text-muted-foreground">Win Rate</p>
             <p
               class="text-2xl font-bold"
-              :class="winRate >= 50 ? 'text-emerald-600' : 'text-gray-900'"
+              :class="winRate >= 50 ? 'text-emerald-600' : 'text-gray-900 dark:text-white'"
             >
               {{ formatNumber(winRate, 1) }}%
             </p>
