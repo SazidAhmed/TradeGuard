@@ -143,10 +143,9 @@ Architecture note: this project is now local-only and uses Pinia + browser `loca
 
 ## 9. Outcome Quality Tracking
 - For trades marked as `Win`, target-quality tagging is implemented:
-  - `Hit 1R`
-  - `Hit 2R`
-  - `Hit 3R`
-- Target hit selection contributes to `Net R` analytics.
+  - Custom Fractional R input (e.g. `1.5R` for partial closures)
+  - Quick-select buttons for `1R`, `2R`, `3R`
+- Target hit selection seamlessly handles complex partial take-profits and contributes to `Net R` analytics.
 
 ## 10. Build and Code Health
 - Type/lint diagnostics checked for `index.vue` with no reported issues.

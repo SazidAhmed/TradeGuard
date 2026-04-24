@@ -816,32 +816,44 @@ watch(
             </div>
 
             <!-- R-Multiple Selector (Only for Wins) -->
-            <div v-if="trade.outcome === 'Win'" class="flex gap-2">
-              <span class="text-xs text-muted-foreground py-1">Hit:</span>
-              <Button
-                size="sm"
-                :variant="trade.targetHitMultiple === 1 ? 'default' : 'outline'"
-                class="flex-1 text-xs"
-                @click="store.setTargetHitMultiple(trade.id, 1)"
-              >
-                1R
-              </Button>
-              <Button
-                size="sm"
-                :variant="trade.targetHitMultiple === 2 ? 'default' : 'outline'"
-                class="flex-1 text-xs"
-                @click="store.setTargetHitMultiple(trade.id, 2)"
-              >
-                2R
-              </Button>
-              <Button
-                size="sm"
-                :variant="trade.targetHitMultiple === 3 ? 'default' : 'outline'"
-                class="flex-1 text-xs"
-                @click="store.setTargetHitMultiple(trade.id, 3)"
-              >
-                3R
-              </Button>
+            <div v-if="trade.outcome === 'Win'" class="flex items-center gap-2 mt-2">
+              <span class="text-xs text-muted-foreground">Earned R:</span>
+              <Input
+                :value="trade.targetHitMultiple"
+                @input="(e: Event) => store.setTargetHitMultiple(trade.id, Number((e.target as HTMLInputElement).value))"
+                type="number"
+                step="0.1"
+                class="h-8 w-20 text-xs text-center font-medium"
+              />
+              <div class="flex flex-1 gap-1">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  class="flex-1 px-1 h-8 text-[10px]"
+                  :class="trade.targetHitMultiple === 1 ? 'bg-emerald-100 text-emerald-700 border-emerald-200' : ''"
+                  @click="store.setTargetHitMultiple(trade.id, 1)"
+                >
+                  1R
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  class="flex-1 px-1 h-8 text-[10px]"
+                  :class="trade.targetHitMultiple === 2 ? 'bg-emerald-100 text-emerald-700 border-emerald-200' : ''"
+                  @click="store.setTargetHitMultiple(trade.id, 2)"
+                >
+                  2R
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  class="flex-1 px-1 h-8 text-[10px]"
+                  :class="trade.targetHitMultiple === 3 ? 'bg-emerald-100 text-emerald-700 border-emerald-200' : ''"
+                  @click="store.setTargetHitMultiple(trade.id, 3)"
+                >
+                  3R
+                </Button>
+              </div>
             </div>
 
             <!-- Actual Risk Input -->

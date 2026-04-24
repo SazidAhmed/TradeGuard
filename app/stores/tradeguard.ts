@@ -21,7 +21,7 @@ export interface TradeLogEntry {
   positionSizeUSDT: number
   targets: number[]
   actualRiskUsed: number
-  targetHitMultiple: 1 | 2 | 3 | null
+  targetHitMultiple: number | null
   outcome: TradeOutcome
 }
 
@@ -127,7 +127,7 @@ export const useTradeguardStore = defineStore("tradeguard", {
       return this.closedTrades.reduce((sum, trade) => {
         if (trade.outcome === "Loss") return sum - trade.actualRiskUsed
         if (trade.outcome === "Win") {
-          const reward = trade.actualRiskUsed * (trade.targetHitMultiple || 1)
+          const reward = trade.actualRiskUsed * (trade.targetHitMultiple ?? 1)
           return sum + reward
         }
         return sum
@@ -275,7 +275,7 @@ export const useTradeguardStore = defineStore("tradeguard", {
         if (outcome !== "Win") item.targetHitMultiple = null
       }
     },
-    setTargetHitMultiple(id: number, value: 1 | 2 | 3) {
+    setTargetHitMultiple(id: number, value: number) {
       const item = this.tradeLog.find(trade => trade.id === id)
       if (item) {
         item.targetHitMultiple = value
