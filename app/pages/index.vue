@@ -25,6 +25,7 @@ import {
   Moon,
   Wand2,
   ShieldAlert,
+  LineChart,
 } from "lucide-vue-next";
 
 useSeoMeta({
@@ -254,6 +255,65 @@ const getOutcomeTextColor = (outcome: string) => {
       return "text-muted-foreground";
   }
 };
+
+const equityCurvePoints = computed(() => {
+  const points: { x: number; y: number }[] = [];
+  let cumulativePnl = 0;
+  
+  const reversedTrades = [...tradeLog.value].reverse();
+  points.push({ x: 0, y: 0 });
+  
+  reversedTrades.forEach((trade, idx) => {
+    let pnl = 0;
+    if (trade.outcome === 'Win' && trade.targetHitMultiple) {
+      pnl = trade.actualRiskUsed * trade.targetHitMultiple;
+    } else if (trade.outcome === 'Loss') {
+      pnl = -trade.actualRiskUsed;
+    }
+    
+    cumulativePnl += pnl;
+    points.push({ x: idx + 1, y: cumulativePnl });
+  });
+  
+  return points;
+});
+
+const equityCurvePath = computed(() => {
+  const points = equityCurvePoints.value;
+  if (points.length < 2) return '';
+  
+  const width = 100;
+  const height = 40;
+  
+  const maxX = points[points.length - 1].x;
+  const ys = points.map(p => p.y);
+  const maxY = Math.max(...ys, 0.01);
+  const minY = Math.min(...ys, -0.01);
+  const rangeY = (maxY - minY) || 1;
+  
+  return points.map(p => {
+    const mapX = (p.x / maxX) * width;
+    const mapY = height - ((p.y - minY) / rangeY) * height;
+    return `${mapX},${mapY}`;
+  }).join(' ');
+});
+
+const equityCurveArea = computed(() => {
+  const points = equityCurvePoints.value;
+  if (points.length < 2) return '';
+  const path = equityCurvePath.value;
+  const width = 100;
+  const height = 40;
+  const ys = points.map(p => p.y);
+  const minY = Math.min(...ys, -0.01);
+  const maxY = Math.max(...ys, 0.01);
+  const rangeY = (maxY - minY) || 1;
+  
+  // Zero line Y coordinate
+  const zeroY = height - ((0 - minY) / rangeY) * height;
+  
+  return `${path} ${width},${height} 0,${height}`;
+});
 
 onMounted(() => {
   store.hydrateFromStorage();
@@ -1102,6 +1162,36 @@ watch(
             <p class="relative text-[10px] font-bold uppercase tracking-wider text-muted-foreground mt-0.5">Breakeven</p>
           </div>
         </div>
+
+        <!-- Equity Curve Chart -->
+        <Card class="overflow-hidden">
+          <CardContent class="p-4">
+            <h3 class="mb-2 flex items-center gap-2 text-sm font-semibold">
+              <LineChart class="h-4 w-4 text-indigo-600" />
+              Equity Curve (PnL)
+            </h3>
+            
+            <div class="h-32 w-full pt-4 relative">
+              <div v-if="equityCurvePoints.length < 2" class="absolute inset-0 flex items-center justify-center text-xs text-muted-foreground">
+                Not enough data to plot
+              </div>
+              <svg v-else viewBox="0 0 100 40" class="w-full h-full overflow-visible" preserveAspectRatio="none">
+                <!-- Zero line (Breakeven) -->
+                <line x1="0" :y1="40 - ((0 - Math.min(...equityCurvePoints.map(p => p.y), -0.01)) / ((Math.max(...equityCurvePoints.map(p => p.y), 0.01) - Math.min(...equityCurvePoints.map(p => p.y), -0.01)) || 1)) * 40" x2="100" :y2="40 - ((0 - Math.min(...equityCurvePoints.map(p => p.y), -0.01)) / ((Math.max(...equityCurvePoints.map(p => p.y), 0.01) - Math.min(...equityCurvePoints.map(p => p.y), -0.01)) || 1)) * 40" stroke="currentColor" stroke-width="0.5" class="text-muted-foreground/30 stroke-dasharray-2" stroke-dasharray="2" />
+                
+                <polygon :points="equityCurveArea" class="fill-indigo-500/10 dark:fill-indigo-500/20" />
+                <polyline :points="equityCurvePath" fill="none" class="stroke-indigo-600 dark:stroke-indigo-400" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </div>
+            
+            <div class="mt-2 flex justify-between text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
+              <span>Start</span>
+              <span :class="equityCurvePoints[equityCurvePoints.length - 1]?.y >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'">
+                Current: {{ formatNumber(equityCurvePoints[equityCurvePoints.length - 1]?.y || 0, 2) }}
+              </span>
+            </div>
+          </CardContent>
+        </Card>
 
         <!-- Win Rate & Net R -->
         <div class="grid grid-cols-2 gap-2">
