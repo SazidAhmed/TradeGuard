@@ -43,17 +43,18 @@ const toFixedNumber = (value: number, decimals = PRICE_DECIMALS) => Number(value
 
 export const useTradeguardStore = defineStore("tradeguard", {
   state: () => ({
-    symbol: "AVNTUSDT",
-    entryPrice: 0.132,
-    stopLoss: 0.11,
-    accountBalance: 100,
+    symbol: "BTCUSDT",
+    entryPrice: 80000,
+    stopLoss: 75000,
+    accountBalance: 1000,
     riskMode: "fixed" as RiskMode,
-    riskValue: 1,
+    riskValue: 5,
     direction: "long" as Direction,
     signalText: "",
     parserMessage: "",
     tradeLog: [] as TradeLogEntry[],
     outcomeFilter: "All" as TradeFilter,
+    targetRatios: [1, 2, 3] as number[],
   }),
   getters: {
     riskAmount: (state) => {
@@ -78,7 +79,7 @@ export const useTradeguardStore = defineStore("tradeguard", {
       return this.quantityToBuy * Number(this.entryPrice)
     },
     targets(): { multiple: number, price: number }[] {
-      return [1, 2, 3].map((n) => {
+      return this.targetRatios.map((n) => {
         if (this.hasInvalidInputs) return { multiple: n, price: 0 }
         const move = this.riskPerUnit * n
         const price = this.direction === "long"
@@ -257,11 +258,12 @@ export const useTradeguardStore = defineStore("tradeguard", {
       this.tradeLog = []
     },
     resetCalculator() {
-      this.entryPrice = 0.132
-      this.stopLoss = 0.11
+      this.entryPrice = 80000
+      this.stopLoss = 75000
       this.riskMode = "fixed"
-      this.riskValue = 1
+      this.riskValue = 5
       this.direction = "long"
+      this.targetRatios = [1, 2, 3]
       this.signalText = ""
       this.parserMessage = "Calculator reset to defaults."
     },
@@ -319,6 +321,7 @@ export const useTradeguardStore = defineStore("tradeguard", {
       if (parsed.direction === "long" || parsed.direction === "short") this.direction = parsed.direction
       if (typeof parsed.entryPrice === "number") this.entryPrice = parsed.entryPrice
       if (typeof parsed.stopLoss === "number") this.stopLoss = parsed.stopLoss
+      if (Array.isArray(parsed.targetRatios)) this.targetRatios = parsed.targetRatios
       if (Array.isArray(parsed.tradeLog)) this.tradeLog = parsed.tradeLog
       this.parserMessage = "Session imported successfully."
       return true
