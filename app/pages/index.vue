@@ -23,6 +23,8 @@ import {
   Flame,
   Sun,
   Moon,
+  Wand2,
+  ShieldAlert,
 } from "lucide-vue-next";
 
 useSeoMeta({
@@ -368,118 +370,135 @@ watch(
         </div>
 
         <!-- Signal Parser (Collapsible) -->
-        <div class="rounded-xl bg-card border shadow-sm">
+        <div class="rounded-xl bg-card border shadow-sm overflow-hidden transition-all duration-300">
           <button
-            class="flex w-full items-center justify-between p-4"
+            class="flex w-full items-center justify-between p-4 transition-colors"
+            :class="showSignalParser ? 'bg-indigo-50/50 dark:bg-indigo-950/20 border-b' : 'hover:bg-muted/50'"
             @click="showSignalParser = !showSignalParser"
           >
             <div class="flex items-center gap-2">
-              <Zap class="h-4 w-4 text-indigo-600" />
-              <span class="text-sm font-medium">Signal Parser</span>
+              <div class="flex h-6 w-6 items-center justify-center rounded-full bg-indigo-100 dark:bg-indigo-900/50">
+                <Wand2 class="h-3 w-3 text-indigo-600 dark:text-indigo-400" :class="{'animate-pulse': showSignalParser}" />
+              </div>
+              <span class="text-sm font-semibold tracking-tight">Smart Signal Parser</span>
             </div>
             <component
               :is="showSignalParser ? ChevronUp : ChevronDown"
               class="h-4 w-4 text-muted-foreground"
             />
           </button>
-          <div v-if="showSignalParser" class="border-t px-4 pb-4">
-            <textarea
-              v-model="signalText"
-              class="mt-3 min-h-24 w-full rounded-lg border border-input bg-background p-3 text-sm outline-none focus-visible:border-indigo-500"
-              placeholder="Paste your signal text here..."
-            />
-            <div class="mt-3 flex gap-2">
-              <Button
-                size="sm"
-                variant="outline"
-                class="flex-1"
-                @click="store.parseSignal"
-              >
-                Parse
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                class="flex-1"
-                @click="store.resetCalculator"
-              >
-                Reset
-              </Button>
+          <Transition name="fade-slide">
+            <div v-if="showSignalParser" class="p-4 bg-gradient-to-b from-indigo-50/30 to-transparent dark:from-indigo-950/10">
+              <textarea
+                v-model="signalText"
+                class="min-h-24 w-full rounded-lg border border-indigo-100 dark:border-indigo-900/50 bg-white/50 dark:bg-black/20 p-3 text-sm outline-none focus-visible:border-indigo-500 transition-colors placeholder:text-muted-foreground/60"
+                placeholder="Paste signal (e.g., Buy BTCUSDT Entry 50000 SL 48000)"
+              />
+              <div class="mt-3 flex gap-2">
+                <Button
+                  size="sm"
+                  class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm"
+                  @click="store.parseSignal"
+                >
+                  <Wand2 class="h-3 w-3 mr-1.5" /> Parse Signal
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  class="flex-1"
+                  @click="store.resetCalculator"
+                >
+                  Clear Form
+                </Button>
+              </div>
+              <p v-if="parserMessage" class="mt-2 text-xs text-indigo-600 dark:text-indigo-400 font-medium text-center">
+                {{ parserMessage }}
+              </p>
             </div>
-            <p v-if="parserMessage" class="mt-2 text-xs text-muted-foreground">
-              {{ parserMessage }}
-            </p>
-          </div>
+          </Transition>
         </div>
 
         <!-- Input Form Card -->
-        <Card class="overflow-hidden">
-          <CardContent class="space-y-4 p-4">
-            <!-- Symbol & Direction -->
-            <div class="flex gap-2">
-              <div class="flex-1">
-                <Label class="mb-1.5 block text-xs font-medium">Symbol</Label>
-                <Input
-                  v-model="symbol"
-                  type="text"
-                  placeholder="e.g. BTCUSDT"
-                  class="h-11 dark:text-white"
-                />
+        <Card class="overflow-hidden shadow-sm border-indigo-100 dark:border-indigo-900/50">
+          <CardContent class="p-4 space-y-4">
+            
+            <!-- SECTION 1: Trade Setup -->
+            <div class="rounded-xl border bg-muted/10 p-3 space-y-3">
+              <h3 class="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                <Target class="h-3.5 w-3.5 text-indigo-500" /> Trade Setup
+              </h3>
+              <!-- Symbol & Direction -->
+              <div class="flex gap-2">
+                <div class="flex-1">
+                  <Label class="mb-1.5 block text-xs font-medium">Symbol</Label>
+                  <Input
+                    v-model="symbol"
+                    type="text"
+                    placeholder="e.g. BTCUSDT"
+                    class="h-11 dark:text-white"
+                  />
+                </div>
+                <div>
+                  <Label class="mb-1.5 block text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Side</Label>
+                  <div class="relative flex h-[38px] rounded-xl border bg-muted/30 p-1 shadow-sm">
+                    <!-- Sliding Background -->
+                    <div
+                      class="absolute inset-y-1 w-[calc(50%-4px)] rounded-lg shadow-sm transition-all duration-300"
+                      :class="direction === 'long' ? 'left-1 bg-emerald-500 shadow-emerald-500/20' : 'left-[calc(50%+2px)] bg-red-500 shadow-red-500/20'"
+                    ></div>
+                    
+                    <button
+                      class="relative z-10 flex flex-1 items-center justify-center gap-1.5 rounded-lg text-xs font-bold transition-colors duration-300"
+                      :class="direction === 'long' ? 'text-white' : 'text-muted-foreground hover:text-foreground'"
+                      @click="direction = 'long'"
+                    >
+                      <TrendingUp class="h-3.5 w-3.5" />
+                      Long
+                    </button>
+                    <button
+                      class="relative z-10 flex flex-1 items-center justify-center gap-1.5 rounded-lg text-xs font-bold transition-colors duration-300"
+                      :class="direction === 'short' ? 'text-white' : 'text-muted-foreground hover:text-foreground'"
+                      @click="direction = 'short'"
+                    >
+                      <TrendingDown class="h-3.5 w-3.5" />
+                      Short
+                    </button>
+                  </div>
+                </div>
               </div>
-              <div>
-                <Label class="mb-1.5 block text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Side</Label>
-                <div class="relative flex h-[38px] rounded-xl border bg-muted/30 p-1 shadow-sm">
-                  <!-- Sliding Background -->
-                  <div
-                    class="absolute inset-y-1 w-[calc(50%-4px)] rounded-lg shadow-sm transition-all duration-300"
-                    :class="direction === 'long' ? 'left-1 bg-emerald-500 shadow-emerald-500/20' : 'left-[calc(50%+2px)] bg-red-500 shadow-red-500/20'"
-                  ></div>
-                  
-                  <button
-                    class="relative z-10 flex flex-1 items-center justify-center gap-1.5 rounded-lg text-xs font-bold transition-colors duration-300"
-                    :class="direction === 'long' ? 'text-white' : 'text-muted-foreground hover:text-foreground'"
-                    @click="direction = 'long'"
+
+              <!-- Entry & Stop Loss -->
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <Label class="mb-1.5 block text-xs font-medium"
+                    >Entry Price</Label
                   >
-                    <TrendingUp class="h-3.5 w-3.5" />
-                    Long
-                  </button>
-                  <button
-                    class="relative z-10 flex flex-1 items-center justify-center gap-1.5 rounded-lg text-xs font-bold transition-colors duration-300"
-                    :class="direction === 'short' ? 'text-white' : 'text-muted-foreground hover:text-foreground'"
-                    @click="direction = 'short'"
+                  <Input
+                    v-model="entryPrice"
+                    type="number"
+                    step="any"
+                    class="h-11 dark:text-white"
+                  />
+                </div>
+                <div>
+                  <Label class="mb-1.5 block text-xs font-medium"
+                    >Stop Loss</Label
                   >
-                    <TrendingDown class="h-3.5 w-3.5" />
-                    Short
-                  </button>
+                  <Input
+                    v-model="stopLoss"
+                    type="number"
+                    step="any"
+                    class="h-11 dark:text-white"
+                  />
                 </div>
               </div>
             </div>
 
-            <!-- Entry & Stop Loss -->
-            <div class="grid grid-cols-2 gap-3">
-              <div>
-                <Label class="mb-1.5 block text-xs font-medium"
-                  >Entry Price</Label
-                >
-                <Input
-                  v-model="entryPrice"
-                  type="number"
-                  step="any"
-                  class="h-11 dark:text-white"
-                />
-              </div>
-              <div>
-                <Label class="mb-1.5 block text-xs font-medium"
-                  >Stop Loss</Label
-                >
-                <Input
-                  v-model="stopLoss"
-                  type="number"
-                  step="any"
-                  class="h-11 dark:text-white"
-                />
-              </div>
-            </div>
+            <!-- SECTION 2: Risk Config -->
+            <div class="rounded-xl border bg-muted/10 p-3 space-y-3">
+              <h3 class="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                <ShieldAlert class="h-3.5 w-3.5 text-indigo-500" /> Risk Config
+              </h3>
 
             <!-- Balance & Leverage -->
             <div class="grid grid-cols-2 gap-3">
@@ -555,17 +574,24 @@ watch(
               </div>
             </div>
 
+            </div>
+
             <!-- Target Ratios -->
-            <div>
-              <Label class="mb-1.5 block text-xs font-medium"
-                >Target Ratios (e.g. 1, 2, 3)</Label
-              >
-              <Input
-                v-model="targetRatiosInput"
-                type="text"
-                placeholder="1, 2, 3"
-                class="h-11 dark:text-white"
-              />
+            <div class="rounded-xl border bg-muted/10 p-3 space-y-3">
+              <h3 class="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                <Target class="h-3.5 w-3.5 text-indigo-500" /> Output Config
+              </h3>
+              <div>
+                <Label class="mb-1.5 block text-xs font-medium"
+                  >Target Ratios (e.g. 1, 2, 3)</Label
+                >
+                <Input
+                  v-model="targetRatiosInput"
+                  type="text"
+                  placeholder="1, 2, 3"
+                  class="h-11 dark:text-white"
+                />
+              </div>
             </div>
 
             <!-- Error Message -->

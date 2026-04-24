@@ -167,5 +167,10 @@ Architecture note: this project is now local-only and uses Pinia + browser `loca
   - Enlarged typography and utilized tabular numbers for Win Rate and Net R.
   - Improved the Survival Heatmap cells with interactive scaling and shadow effects on hover.
 
+## 13. Tab-Specific Polish (Phase 5)
+- **Calculator Tab**:
+  - Visually grouped inputs into distinct sections (`Trade Setup`, `Risk Config`, `Output Config`) using nested cards and icons for improved cognitive flow.
+  - Redesigned the Signal Parser into a premium expandable section with an animated wand icon and subtle gradient backgrounds.
+
 ## Not Implemented Yet (Planned Later)
 - Exchange API integration and auto-order execution
