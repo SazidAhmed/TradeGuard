@@ -342,7 +342,21 @@ export const useTradeguardStore = defineStore("tradeguard", {
         if (parsed.direction === "long" || parsed.direction === "short") this.direction = parsed.direction
         if (typeof parsed.entryPrice === "number") this.entryPrice = parsed.entryPrice
         if (typeof parsed.stopLoss === "number") this.stopLoss = parsed.stopLoss
-        if (Array.isArray(parsed.tradeLog)) this.tradeLog = parsed.tradeLog
+        if (Array.isArray(parsed.tradeLog)) {
+          // Migrate old number[] targets format to new {multiple, price}[] format
+          this.tradeLog = parsed.tradeLog.map((trade: TradeLogEntry) => {
+            if (Array.isArray(trade.targets) && trade.targets.length > 0 && typeof trade.targets[0] === 'number') {
+              return {
+                ...trade,
+                targets: (trade.targets as unknown as number[]).map((price, idx) => ({
+                  multiple: idx + 1,
+                  price,
+                })),
+              }
+            }
+            return trade
+          })
+        }
       }
       catch {
         this.parserMessage = "Saved session was invalid and was skipped."
