@@ -300,9 +300,9 @@ const logTrade = () => {
               <Label class="mb-1.5 block text-xs font-bold text-muted-foreground uppercase tracking-widest">Symbol</Label>
               <div class="relative group">
                 <div class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/50 group-focus-within:text-indigo-500 transition-colors">
-                  <TrendingUp class="h-4 w-4" />
+                  <component :is="direction === 'long' ? TrendingUp : TrendingDown" class="h-4 w-4" />
                 </div>
-                <Input v-model="symbol" type="text" placeholder="e.g. BTCUSDT" class="h-12 pl-10 font-black dark:text-white border-2 focus-visible:border-indigo-500/50 shadow-sm transition-all" />
+                <Input v-model="symbol" type="text" placeholder="BTCUSDT" class="h-12 pl-10 font-black dark:text-white border-2 focus-visible:border-indigo-500/50 shadow-sm transition-all placeholder:font-normal placeholder:opacity-50" />
               </div>
             </div>
             <div>
@@ -324,7 +324,7 @@ const logTrade = () => {
                 <div class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/50 group-focus-within:text-indigo-500 transition-colors">
                   <Target class="h-4 w-4" />
                 </div>
-                <Input v-model="entryPrice" type="number" step="any" placeholder="e.g. 80000" class="h-12 pl-10 font-bold dark:text-white border-2 focus-visible:border-indigo-500/50 shadow-sm transition-all" />
+                <Input v-model="entryPrice" type="number" step="any" placeholder="80000" class="h-12 pl-10 font-bold dark:text-white border-2 focus-visible:border-indigo-500/50 shadow-sm transition-all placeholder:font-normal placeholder:opacity-50" />
               </div>
             </div>
             <div class="relative">
@@ -333,7 +333,7 @@ const logTrade = () => {
                 <div class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/50 group-focus-within:text-red-500 transition-colors">
                   <ShieldAlert class="h-4 w-4" />
                 </div>
-                <Input v-model="stopLoss" type="number" step="any" placeholder="e.g. 75000" class="h-12 pl-10 font-bold dark:text-white border-2 focus-visible:border-red-500/50 shadow-sm transition-all" />
+                <Input v-model="stopLoss" type="number" step="any" placeholder="75000" class="h-12 pl-10 font-bold dark:text-white border-2 focus-visible:border-red-500/50 shadow-sm transition-all placeholder:font-normal placeholder:opacity-50" />
               </div>
             </div>
           </div>
@@ -346,7 +346,7 @@ const logTrade = () => {
           <div class="grid grid-cols-2 gap-3">
             <div>
               <Label class="mb-1.5 block text-xs font-medium">Starting Balance (USDT)</Label>
-              <Input v-model="accountBalance" type="number" step="any" placeholder="e.g. 1000" class="h-11 dark:text-white" />
+              <Input v-model="accountBalance" type="number" step="any" placeholder="1000" class="h-11 dark:text-white placeholder:font-normal placeholder:opacity-50" />
             </div>
             <div>
               <Label class="mb-1.5 flex justify-between text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
@@ -367,7 +367,7 @@ const logTrade = () => {
           <div>
             <Label class="mb-1.5 block text-xs font-medium">Risk Amount</Label>
             <div class="flex gap-2">
-              <Input v-model="riskValue" type="number" min="0" step="any" placeholder="e.g. 5" class="h-11 flex-1 dark:text-white" />
+              <Input v-model="riskValue" type="number" min="0" step="any" placeholder="5" class="h-11 flex-1 dark:text-white placeholder:font-normal placeholder:opacity-50" />
               <div class="flex rounded-lg border p-1">
                 <Button size="sm" :variant="riskMode === 'percent' ? 'default' : 'ghost'" class="h-8 w-10 text-xs dark:text-white" :class="riskMode === 'percent' ? 'bg-indigo-600 text-white' : ''" @click="riskMode = 'percent'">%</Button>
                 <Button size="sm" :variant="riskMode === 'fixed' ? 'default' : 'ghost'" class="h-8 w-10 text-xs dark:text-white" :class="riskMode === 'fixed' ? 'bg-indigo-600 text-white' : ''" @click="riskMode = 'fixed'">$</Button>
@@ -394,7 +394,7 @@ const logTrade = () => {
           <div class="space-y-3">
             <div>
               <Label class="mb-1.5 block text-xs font-medium">Max Target Ratio (e.g. 3)</Label>
-              <Input v-model="targetRatiosInput" type="number" step="any" min="1" placeholder="3" class="h-11 dark:text-white" aria-label="Max Target Ratio" />
+              <Input v-model="targetRatiosInput" type="number" step="any" min="1" placeholder="3" class="h-11 dark:text-white placeholder:font-normal placeholder:opacity-50" aria-label="Max Target Ratio" />
             </div>
             <div v-if="targetRatios.length > 0" class="space-y-1.5 px-1">
               <div class="flex justify-between text-[10px] font-bold uppercase tracking-widest text-muted-foreground">

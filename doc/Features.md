@@ -213,6 +213,18 @@ Architecture note: this project is now local-only and uses Pinia + browser `loca
   - Replaced the static "Risk" label with a dynamic "Trades: X/100" counter for quick challenge progress tracking.
   - Removed the functional click-handler from the Settings icon, preparing it as a UI placeholder for future configurations without triggering the delete modal.
 
+## 17. UI/UX Polishing & Bug Fixes (Phase 9)
+
+- **Calculator Tab**:
+  - Added dynamic icon switching within the Symbol input field (`TrendingUp` for Long, `TrendingDown` for Short).
+  - Cleaned up input placeholders by removing redundant "e.g." prefixes and applying lighter opacity styling for a cleaner aesthetic.
+- **Trades Tab**:
+  - Restored and redesigned the Trade Card action row to a clean vertically-stacked layout.
+  - Replaced the hidden swipe-to-delete mechanic with an accessible, inline delete button.
+  - Upgraded the "Earned R" tracking into a direct "Profit $" input, utilizing a bidirectional computed property to seamlessly calculate fractional R-multiples while fully supporting decimal typing without glitching.
+- **Data Integrity**:
+  - Implemented a robust pre-validation migration step in the hydration logic to cleanly convert legacy target data formats before Zod schema validation, resolving issues where saved trades would disappear on page refresh.
+
 ## Not Implemented Yet (Planned Later)
 
 - Exchange API integration and auto-order execution

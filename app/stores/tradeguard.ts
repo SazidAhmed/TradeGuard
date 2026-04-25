@@ -364,7 +364,23 @@ export const useTradeguardStore = defineStore("tradeguard", {
       if (!raw) return
       try {
         const rawJson = JSON.parse(raw)
-        // Migration: Old targetRatios might be missing, ensure we handle it
+        
+        // Data Migration BEFORE validation
+        if (Array.isArray(rawJson.tradeLog)) {
+          rawJson.tradeLog = rawJson.tradeLog.map((trade: any) => {
+             if (trade.targets && trade.targets.length > 0 && typeof trade.targets[0] === 'number') {
+               return {
+                 ...trade,
+                 targets: trade.targets.map((price: number, idx: number) => ({
+                   multiple: idx + 1,
+                   price
+                 }))
+               }
+             }
+             return trade
+          })
+        }
+
         const result = PersistedStateSchema.safeParse(rawJson)
         if (result.success) {
           const data = result.data
@@ -377,20 +393,7 @@ export const useTradeguardStore = defineStore("tradeguard", {
           this.entryPrice = data.entryPrice === 0 ? "" : data.entryPrice
           this.stopLoss = data.stopLoss === 0 ? "" : data.stopLoss
           this.targetRatios = data.targetRatios
-          
-          // Data Migration for TradeLog targets (Old format was number[], new is {multiple, price}[])
-          this.tradeLog = data.tradeLog.map(trade => {
-             if (trade.targets.length > 0 && typeof (trade.targets[0] as any) === 'number') {
-               return {
-                 ...trade,
-                 targets: (trade.targets as unknown as number[]).map((price, idx) => ({
-                   multiple: idx + 1,
-                   price
-                 }))
-               }
-             }
-             return trade
-          })
+          this.tradeLog = data.tradeLog
         } else {
           console.error("Hydration failed validation:", result.error)
           this.parserMessage = "Saved session was invalid and was skipped."
