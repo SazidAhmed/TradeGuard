@@ -1,75 +1,62 @@
-# Nuxt Minimal Starter
+# 🛡️ TradeGuard
 
-Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
+**TradeGuard** is a premium risk management dashboard designed for disciplined traders pursuing the **100-Trade Challenge**. It combines advanced position sizing, real-time equity tracking, and psychological state management into a sleek, mobile-first experience.
 
-## Setup
+![Dashboard Preview](https://via.placeholder.com/800x450/4f46e5/ffffff?text=TradeGuard+Dashboard)
 
-Make sure to install dependencies:
+## ✨ Core Features
 
-```bash
-# npm
-npm install
+- **🎯 Smart Risk Calculator**: Dynamic position sizing with support for leverage, percentage risk, and custom target multiples.
+- **⚡ AI Signal Parser**: Paste a raw signal from Telegram or Discord, and let TradeGuard extract Entry, Stop Loss, and Leverage automatically.
+- **📈 Real-time Equity Curve**: Visualize your growth with a live SVG chart that updates as you log trades.
+- **🛡️ 100-Trade Heatmap**: Track your progress through the 100-trade challenge with a visual grid.
+- **🌓 Adaptive Dark Mode**: High-contrast, premium aesthetic with glassmorphism and smooth micro-animations.
+- **💾 Persistent State**: Your data is automatically saved to LocalStorage with Zod-validated schema protection.
+- **📱 PWA Ready**: Optimized for mobile with touch-friendly targets, bottom-sheet interactions, and scroll-driven header compression.
 
-# pnpm
-pnpm install
+## 🛠️ Technology Stack
 
-# yarn
-yarn install
+- **Framework**: [Nuxt 3](https://nuxt.com/) (Vue.js 3)
+- **State Management**: [Pinia](https://pinia.vuejs.org/)
+- **Styling**: [Tailwind CSS](https://tailwindcss.com/)
+- **Components**: [shadcn-vue](https://www.shadcn-vue.com/)
+- **Validation**: [Zod](https://zod.dev/)
+- **Icons**: [Lucide Vue Next](https://lucide.dev/)
+- **Utilities**: [VueUse](https://vueuse.org/)
 
-# bun
-bun install
+## 🚀 Getting Started
+
+### Prerequisites
+- Node.js (Latest LTS)
+- npm / pnpm / yarn
+
+### Installation
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/SazidAhmed/TradeGuard.git
+   ```
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Start the development server:
+   ```bash
+   npm run dev
+   ```
+
+## 📂 Architecture
+
+The project follows a modular architecture for better maintainability:
+
+```text
+/app
+  /components
+    /trade        # Feature-specific components (Calculator, Trades, Stats)
+    /ui           # Base UI components (Buttons, Cards, Inputs)
+  /composables    # Shared logic (Formatting, Analytics)
+  /stores         # Global state with persistence (Pinia)
+  /assets         # Global styles and animations
 ```
 
-## Development Server
-
-Start the development server on `http://localhost:3000`:
-
-```bash
-# npm
-npm run dev
-
-# pnpm
-pnpm dev
-
-# yarn
-yarn dev
-
-# bun
-bun run dev
-```
-
-## Production
-
-Build the application for production:
-
-```bash
-# npm
-npm run build
-
-# pnpm
-pnpm build
-
-# yarn
-yarn build
-
-# bun
-bun run build
-```
-
-Locally preview production build:
-
-```bash
-# npm
-npm run preview
-
-# pnpm
-pnpm preview
-
-# yarn
-yarn preview
-
-# bun
-bun run preview
-```
-
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+## 📝 License
+MIT License. Created by Sazid Ahmed.
