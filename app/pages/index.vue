@@ -194,7 +194,6 @@ watchDebounced(
               variant="ghost"
               size="icon"
               class="rounded-xl h-10 w-10 transition-transform active:scale-90"
-              @click="confirmClearAll('all')"
             >
               <Settings class="h-5 w-5" />
             </Button>
@@ -215,7 +214,7 @@ watchDebounced(
             class="mt-3 flex items-center justify-between text-xs text-muted-foreground overflow-hidden md:hidden"
           >
             <span>Balance: <strong :class="currentBalance >= accountBalance ? 'text-emerald-600' : 'text-gray-900 dark:text-white'">{{ formatCompactMoney(currentBalance) }}</strong></span>
-            <span>Risk: <strong class="text-gray-900 dark:text-white">{{ formatCompactMoney(riskAmount) }}</strong></span>
+            <span>Trades: <strong class="text-gray-900 dark:text-white">{{ tradeLog.length }}/100</strong></span>
             <span>Survival: <strong class="text-indigo-600">{{ survivalLossesRemaining }}</strong></span>
           </div>
         </Transition>

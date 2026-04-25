@@ -1,10 +1,12 @@
 # TradeGuard Implemented Features (So Far)
 
 ## Current Implementation Status
+
 This document lists features that are already implemented in the current frontend (Phase 1 scope).
 Architecture note: this project is now local-only and uses Pinia + browser `localStorage` (no backend/database).
 
 ## 1. App Shell and Navigation
+
 - UI completely redesigned with a "mobile-first" high-end aesthetic:
   - Bottom Navigation bar replacing the old sidebar, featuring app-like active state pills for `Calc`, `Trades`, and `Stats`.
   - Desktop layout uses a centered `max-w-lg` container floating over a decorative, glowing radial gradient background.
@@ -16,6 +18,7 @@ Architecture note: this project is now local-only and uses Pinia + browser `loca
   - Dark Mode toggle (Sun/Moon icon) with fully responsive theme adapting Semantic colors, tuned with a premium blue/indigo dark theme.
 
 ## 2. Smart Calculator Engine
+
 - Inputs implemented:
   - Symbol (e.g., `AVNTUSDT`)
   - Direction (Animated Long/Short sliding toggle)
@@ -39,6 +42,7 @@ Architecture note: this project is now local-only and uses Pinia + browser `loca
   - `Reset Inputs` action to restore calculator defaults quickly
 
 ## 3. Risk Switch (Dynamic Risk Mode)
+
 - Risk mode toggle implemented:
   - `Percent (%)`
   - `Fixed ($)`
@@ -49,6 +53,7 @@ Architecture note: this project is now local-only and uses Pinia + browser `loca
   - `You are risking $X.XX on this trade.`
 
 ## 4. Validation and Safety Guards
+
 - Input validation implemented to block invalid calculations when:
   - Entry <= 0
   - Stop Loss <= 0
@@ -60,6 +65,7 @@ Architecture note: this project is now local-only and uses Pinia + browser `loca
 - Visual warning state implemented on the execution card when inputs are invalid or margin is insufficient.
 
 ## 5. Execution Card
+
 - Implemented redesigned output card with a gradient accent line and glassmorphic stats:
   - Risk Per Unit
   - Risk Amount
@@ -70,6 +76,7 @@ Architecture note: this project is now local-only and uses Pinia + browser `loca
 - Trade snapshot logging action implemented directly from the execution card via a vibrant indigo-to-violet gradient button with hover shimmer animation.
 
 ## 6. Signal Parser (Quick Paste)
+
 - Text area and parse action implemented for pasted trading signals.
 - Regex extraction implemented for:
   - Entry (single value)
@@ -86,6 +93,7 @@ Architecture note: this project is now local-only and uses Pinia + browser `loca
   - Parse failure
 
 ## 7. Local Trade Log (Session + Persistence)
+
 - Frontend local trade logging implemented.
 - Session persistence implemented via Pinia store state + `localStorage` for:
   - Calculator inputs/settings
@@ -121,6 +129,7 @@ Architecture note: this project is now local-only and uses Pinia + browser `loca
   - Clear all app data (store reset + localStorage removal)
 
 ## 8. Analytics and Survival Tracking
+
 - Risk Consistency card implemented with:
   - Average Risk Per Trade (from closed trades)
   - Risk Compliance Score
@@ -140,24 +149,28 @@ Architecture note: this project is now local-only and uses Pinia + browser `loca
   - Progress bar card with completion percentage
 
 ## 9. Outcome Quality Tracking
+
 - For trades marked as `Win`, target-quality tagging is implemented:
   - Custom Fractional R input (e.g. `1.5R` for partial closures)
   - Quick-select buttons for `1R`, `2R`, `3R`
 - Target hit selection seamlessly handles complex partial take-profits and contributes to `Net R` analytics.
 
 ## 10. Build and Code Health
+
 - Type/lint diagnostics checked for `index.vue` with no reported issues.
 - Type/lint diagnostics checked for `tradeguard` Pinia store with no reported issues.
 - Production build validated successfully (`npm run build`).
 
 ## 11. Micro-animations & UX Polish (Phase 3)
+
 - Smooth `fade-slide` transitions implemented for seamless switching between tabs (Calculator, Trades, Stats).
 - Animated slide-in (`list` transition) for new trade cards added to the log.
 - Global toast notifications updated with a modern bounce animation and scaled appearance.
 - Tabular numbers (`tabular-nums`) applied to critical data elements for clean alignment.
 
 ## 12. Content Formatting & Visual Polish (Phase 4)
-- **Trades Tab**: 
+
+- **Trades Tab**:
   - Redesigned empty state with a premium illustrative layout and glowing background gradients.
   - Added subtle lift/shadow hover effects to trade cards.
   - Simplified outcome badges using solid colored pills for quick scanning.
@@ -168,22 +181,39 @@ Architecture note: this project is now local-only and uses Pinia + browser `loca
   - Improved the Survival Heatmap cells with interactive scaling and shadow effects on hover.
 
 ## 13. Tab-Specific Polish (Phase 5)
+
 - **Calculator Tab**:
   - Visually grouped inputs into distinct sections (`Trade Setup`, `Risk Config`, `Output Config`) using nested cards and icons for improved cognitive flow.
   - Redesigned the Signal Parser into a premium expandable section with an animated wand icon and subtle gradient backgrounds.
 
 ## 14. Mobile-Specific Refinements (Phase 6)
+
 - Implemented iOS safe area padding (`env(safe-area-inset-bottom)`) for the bottom navigation bar to prevent overlap with the home indicator.
 - Ensured touch targets across the application (inputs `h-11`, bottom nav items `h-16`) meet or exceed mobile usability standards.
 
 ## 15. Final Output & Safety Polish (Phase 7)
+
 - **Calculator Tab**: Added a dynamic, gradient-filled Max Risk:Reward summary bar to quickly visualize the target multiples.
-- **Trades Tab**: 
+- **Trades Tab**:
   - Added relative timestamps (`Just now`, `2m ago`, etc.) to trade log cards using a custom formatting utility.
   - Implemented a custom, premium confirmation modal wrapper to prevent accidental trade deletions or full log clears.
-- **Stats Tab**: 
+- **Stats Tab**:
   - Built a fully custom CSS-driven animated circular gauge to visually represent the Risk Compliance Score.
   - **Equity Curve Chart**: Added a pure SVG-based reactive line chart to visualize cumulative Profit and Loss (PnL) over the challenge lifespan.
 
+## 16. UX Polish & Workflow Optimization (Phase 8)
+
+- **Calculator Tab**:
+  - Simplified Target Ratio input into a single "Max Target Ratio" number that auto-generates intermediate multiples (e.g., entering `3` generates `1R, 2R, 3R`).
+  - Added real-time monetary reward projection (e.g., `+$30.00`) directly on Target action buttons.
+  - Implemented auto-clearing of Entry, Stop Loss, Symbol, and Parser fields upon successful trade execution to instantly ready the calculator for the next trade.
+  - Fixed light theme visibility issues on the active Leverage selector button.
+  - Improved persistence logic to reliably save and restore empty placeholder states and protect persistent settings (like Starting Balance) from accidental resets.
+- **Header Navigation**:
+  - Replaced the static "Risk" label with a dynamic "Trades: X/100" counter for quick challenge progress tracking.
+  - Removed the functional click-handler from the Settings icon, preparing it as a UI placeholder for future configurations without triggering the delete modal.
+
 ## Not Implemented Yet (Planned Later)
+
 - Exchange API integration and auto-order execution
+

@@ -50,14 +50,18 @@ const {
 const { formatNumber, formatMoney } = useFormatting();
 
 const targetRatiosInput = computed({
-  get: () => targetRatios.value.join(", "),
+  get: () => targetRatios.value.length > 0 ? String(Math.max(...targetRatios.value)) : "",
   set: (val: string) => {
-    const parsed = val
-      .split(/[\s,]+/)
-      .map(Number)
-      .filter((n) => !Number.isNaN(n) && n > 0);
-    if (parsed.length > 0) {
-      targetRatios.value = parsed;
+    const maxVal = Number(val);
+    if (!Number.isNaN(maxVal) && maxVal > 0) {
+      const newRatios = [];
+      for (let i = 1; i <= Math.floor(maxVal); i++) {
+        newRatios.push(i);
+      }
+      if (maxVal > Math.floor(maxVal)) {
+        newRatios.push(maxVal);
+      }
+      targetRatios.value = newRatios;
     }
   },
 });
@@ -387,17 +391,30 @@ const logTrade = () => {
             Insufficient margin! Required: {{ formatMoney(marginRequiredUSDT) }}
           </div>
 
-          <div>
-            <Label class="mb-1.5 block text-xs font-medium">Target Ratios (e.g. 1, 2, 3)</Label>
-            <Input v-model="targetRatiosInput" type="text" placeholder="1, 2, 3" class="h-11 dark:text-white" aria-label="Target Ratios" />
+          <div class="space-y-3">
+            <div>
+              <Label class="mb-1.5 block text-xs font-medium">Max Target Ratio (e.g. 3)</Label>
+              <Input v-model="targetRatiosInput" type="number" step="any" min="1" placeholder="3" class="h-11 dark:text-white" aria-label="Max Target Ratio" />
+            </div>
+            <div v-if="targetRatios.length > 0" class="space-y-1.5 px-1">
+              <div class="flex justify-between text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                <span>Max Risk:Reward</span>
+                <span class="text-emerald-600 dark:text-emerald-400 font-black">1:{{ Math.max(...targetRatios) }}</span>
+              </div>
+              <div class="flex h-1.5 w-full overflow-hidden rounded-full bg-muted/20">
+                <div class="bg-red-500 transition-all duration-500" :style="{ flex: 1 }"></div>
+                <div class="bg-emerald-500 transition-all duration-500" :style="{ flex: Math.max(...targetRatios) }"></div>
+              </div>
+            </div>
           </div>
           <div class="grid grid-cols-4 gap-2">
-            <Button v-for="item in targets" :key="item.multiple" variant="outline" size="sm" class="relative h-14 overflow-hidden border-0 text-xs dark:text-white group transition-all duration-300 shadow-md bg-card hover:shadow-lg active:scale-95" :class="[lastCopiedTarget === item.multiple ? 'animate-[success-bounce_0.5s_ease-in-out]' : '']" @click="copyTarget(item.price, item.multiple)">
+            <Button v-for="item in targets" :key="item.multiple" variant="outline" size="sm" class="relative h-16 overflow-hidden border-0 text-xs dark:text-white group transition-all duration-300 shadow-md bg-card hover:shadow-lg active:scale-95" :class="[lastCopiedTarget === item.multiple ? 'animate-[success-bounce_0.5s_ease-in-out]' : '']" @click="copyTarget(item.price, item.multiple)">
               <div class="absolute inset-0 transition-opacity duration-300 opacity-[0.1] group-hover:opacity-[0.15]" :class="[item.multiple <= 1 ? 'bg-blue-500' : item.multiple <= 2 ? 'bg-indigo-500' : item.multiple <= 3 ? 'bg-violet-500' : item.multiple <= 5 ? 'bg-fuchsia-500' : 'bg-rose-500']"></div>
               <div class="absolute bottom-0 left-0 right-0 h-1 transition-all duration-300" :class="[item.multiple <= 1 ? 'bg-blue-500' : item.multiple <= 2 ? 'bg-indigo-500' : item.multiple <= 3 ? 'bg-violet-500' : item.multiple <= 5 ? 'bg-fuchsia-500' : 'bg-rose-500']"></div>
-              <div class="relative z-10 flex flex-col items-center justify-center gap-0.5">
+              <div class="relative z-10 flex flex-col items-center justify-center">
                 <span class="font-black text-[10px] uppercase tracking-tighter" :class="[item.multiple <= 1 ? 'text-blue-600 dark:text-blue-400' : item.multiple <= 2 ? 'text-indigo-600 dark:text-indigo-400' : item.multiple <= 3 ? 'text-violet-600 dark:text-violet-400' : item.multiple <= 5 ? 'text-fuchsia-600 dark:text-fuchsia-400' : 'text-rose-600 dark:text-rose-400']">{{ item.multiple }}R Target</span>
-                <span class="tabular-nums font-bold text-sm">{{ formatNumber(item.price, 4) }}</span>
+                <span class="tabular-nums font-bold text-[13px] mt-0.5">{{ formatNumber(item.price, 4) }}</span>
+                <span class="text-[9px] font-black text-emerald-600 dark:text-emerald-400 mt-0.5">+{{ formatMoney(riskAmount * item.multiple) }}</span>
               </div>
               <div v-if="lastCopiedTarget === item.multiple" class="absolute inset-0 z-20 flex items-center justify-center bg-emerald-500/90 text-white">
                 <Clipboard class="h-5 w-5 animate-bounce" />
