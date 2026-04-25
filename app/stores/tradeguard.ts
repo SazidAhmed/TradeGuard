@@ -1,41 +1,52 @@
 import { defineStore } from "pinia"
+import { z } from "zod"
 
 export type RiskMode = "percent" | "fixed"
 export type Direction = "long" | "short"
 export type TradeOutcome = "Open" | "Win" | "Loss" | "Breakeven"
 export type TradeFilter = "All" | TradeOutcome
 
-export interface TradeLogEntry {
-  id: number
-  createdAt: string
-  symbol: string
-  direction: Direction
-  entryPrice: number
-  stopLoss: number
-  leverage: number
-  riskMode: RiskMode
-  riskValue: number
-  riskAmount: number
-  riskPerUnit: number
-  quantity: number
-  positionSizeUSDT: number
-  targets: { multiple: number; price: number }[]
-  actualRiskUsed: number
-  targetHitMultiple: number | null
-  outcome: TradeOutcome
-}
+// --- ZOD SCHEMAS ---
+const TargetSchema = z.object({
+  multiple: z.number(),
+  price: z.number(),
+})
 
-interface PersistedState {
-  symbol: string
-  accountBalance: number
-  leverage: number
-  riskMode: RiskMode
-  riskValue: number
-  direction: Direction
-  entryPrice: number
-  stopLoss: number
-  tradeLog: TradeLogEntry[]
-}
+const TradeLogEntrySchema = z.object({
+  id: z.number(),
+  createdAt: z.string(),
+  symbol: z.string(),
+  direction: z.enum(["long", "short"]),
+  entryPrice: z.number(),
+  stopLoss: z.number(),
+  leverage: z.number(),
+  riskMode: z.enum(["percent", "fixed"]),
+  riskValue: z.number(),
+  riskAmount: z.number(),
+  riskPerUnit: z.number(),
+  quantity: z.number(),
+  positionSizeUSDT: z.number(),
+  targets: z.array(TargetSchema),
+  actualRiskUsed: z.number(),
+  targetHitMultiple: z.number().nullable(),
+  outcome: z.enum(["Open", "Win", "Loss", "Breakeven"]),
+})
+
+const PersistedStateSchema = z.object({
+  symbol: z.string().default(""),
+  accountBalance: z.union([z.number(), z.string()]).default(""),
+  leverage: z.number().default(1),
+  riskMode: z.enum(["percent", "fixed"]).default("fixed"),
+  riskValue: z.union([z.number(), z.string()]).default(""),
+  direction: z.enum(["long", "short"]).default("long"),
+  entryPrice: z.union([z.number(), z.string()]).default(""),
+  stopLoss: z.union([z.number(), z.string()]).default(""),
+  targetRatios: z.array(z.number()).default([1, 2, 3]),
+  tradeLog: z.array(TradeLogEntrySchema).default([]),
+})
+
+export type TradeLogEntry = z.infer<typeof TradeLogEntrySchema>
+export type PersistedState = z.infer<typeof PersistedStateSchema>
 
 const STORAGE_KEY = "tradeguard.phase1.state"
 const PRICE_DECIMALS = 6
@@ -45,13 +56,13 @@ const toFixedNumber = (value: number, decimals = PRICE_DECIMALS) => Number(value
 
 export const useTradeguardStore = defineStore("tradeguard", {
   state: () => ({
-    symbol: "BTCUSDT",
-    entryPrice: 80000,
-    stopLoss: 75000,
-    accountBalance: 1000,
+    symbol: "",
+    entryPrice: "" as number | string,
+    stopLoss: "" as number | string,
+    accountBalance: "" as number | string,
     leverage: 1,
     riskMode: "fixed" as RiskMode,
-    riskValue: 5,
+    riskValue: "" as number | string,
     direction: "long" as Direction,
     signalText: "",
     parserMessage: "",
@@ -272,13 +283,28 @@ export const useTradeguardStore = defineStore("tradeguard", {
       const item = this.tradeLog.find(trade => trade.id === id)
       if (item) {
         item.outcome = outcome
-        if (outcome !== "Win") item.targetHitMultiple = null
+        if (outcome === "Win") {
+          // If switching to Win and no multiple is set, default to first target
+          if (item.targetHitMultiple === null || item.targetHitMultiple <= 0) {
+            item.targetHitMultiple = item.targets[0]?.multiple || 1
+          }
+        } else if (outcome === "Loss") {
+          item.targetHitMultiple = -1
+        } else if (outcome === "Breakeven") {
+          item.targetHitMultiple = 0
+        } else {
+          item.targetHitMultiple = null
+        }
       }
     },
     setTargetHitMultiple(id: number, value: number) {
       const item = this.tradeLog.find(trade => trade.id === id)
       if (item) {
         item.targetHitMultiple = value
+        // Auto-update outcome based on multiple if applicable
+        if (value > 0) item.outcome = "Win"
+        else if (value === 0) item.outcome = "Breakeven"
+        else if (value < 0) item.outcome = "Loss"
       }
     },
     updateActualRisk(id: number, value: string | number) {
@@ -294,15 +320,17 @@ export const useTradeguardStore = defineStore("tradeguard", {
       this.tradeLog = []
     },
     resetCalculator() {
-      this.entryPrice = 80000
-      this.stopLoss = 75000
+      this.entryPrice = ""
+      this.stopLoss = ""
+      this.accountBalance = ""
       this.leverage = 1
       this.riskMode = "fixed"
-      this.riskValue = 5
+      this.riskValue = ""
       this.direction = "long"
       this.targetRatios = [1, 2, 3]
       this.signalText = ""
       this.parserMessage = "Calculator reset to defaults."
+      this.symbol = ""
     },
     clearAllData() {
       this.$reset()
@@ -314,13 +342,14 @@ export const useTradeguardStore = defineStore("tradeguard", {
     buildPersistedState(): PersistedState {
       return {
         symbol: this.symbol,
-        accountBalance: this.accountBalance,
-        leverage: this.leverage,
+        accountBalance: Number(this.accountBalance),
+        leverage: Number(this.leverage),
         riskMode: this.riskMode,
-        riskValue: this.riskValue,
+        riskValue: Number(this.riskValue),
         direction: this.direction,
-        entryPrice: this.entryPrice,
-        stopLoss: this.stopLoss,
+        entryPrice: Number(this.entryPrice),
+        stopLoss: Number(this.stopLoss),
+        targetRatios: this.targetRatios,
         tradeLog: this.tradeLog,
       }
     },
@@ -333,32 +362,41 @@ export const useTradeguardStore = defineStore("tradeguard", {
       const raw = localStorage.getItem(STORAGE_KEY)
       if (!raw) return
       try {
-        const parsed = JSON.parse(raw) as Partial<PersistedState>
-        if (typeof parsed.symbol === "string" && parsed.symbol.trim()) this.symbol = parsed.symbol
-        if (typeof parsed.accountBalance === "number") this.accountBalance = parsed.accountBalance
-        if (typeof parsed.leverage === "number") this.leverage = parsed.leverage
-        if (parsed.riskMode === "fixed" || parsed.riskMode === "percent") this.riskMode = parsed.riskMode
-        if (typeof parsed.riskValue === "number") this.riskValue = parsed.riskValue
-        if (parsed.direction === "long" || parsed.direction === "short") this.direction = parsed.direction
-        if (typeof parsed.entryPrice === "number") this.entryPrice = parsed.entryPrice
-        if (typeof parsed.stopLoss === "number") this.stopLoss = parsed.stopLoss
-        if (Array.isArray(parsed.tradeLog)) {
-          // Migrate old number[] targets format to new {multiple, price}[] format
-          this.tradeLog = parsed.tradeLog.map((trade: TradeLogEntry) => {
-            if (Array.isArray(trade.targets) && trade.targets.length > 0 && typeof trade.targets[0] === 'number') {
-              return {
-                ...trade,
-                targets: (trade.targets as unknown as number[]).map((price, idx) => ({
-                  multiple: idx + 1,
-                  price,
-                })),
-              }
-            }
-            return trade
+        const rawJson = JSON.parse(raw)
+        // Migration: Old targetRatios might be missing, ensure we handle it
+        const result = PersistedStateSchema.safeParse(rawJson)
+        if (result.success) {
+          const data = result.data
+          this.symbol = data.symbol
+          this.accountBalance = data.accountBalance
+          this.leverage = data.leverage
+          this.riskMode = data.riskMode
+          this.riskValue = data.riskValue
+          this.direction = data.direction
+          this.entryPrice = data.entryPrice
+          this.stopLoss = data.stopLoss
+          this.targetRatios = data.targetRatios
+          
+          // Data Migration for TradeLog targets (Old format was number[], new is {multiple, price}[])
+          this.tradeLog = data.tradeLog.map(trade => {
+             if (trade.targets.length > 0 && typeof (trade.targets[0] as any) === 'number') {
+               return {
+                 ...trade,
+                 targets: (trade.targets as unknown as number[]).map((price, idx) => ({
+                   multiple: idx + 1,
+                   price
+                 }))
+               }
+             }
+             return trade
           })
+        } else {
+          console.error("Hydration failed validation:", result.error)
+          this.parserMessage = "Saved session was invalid and was skipped."
         }
       }
-      catch {
+      catch (e) {
+        console.error("Hydration failed:", e)
         this.parserMessage = "Saved session was invalid and was skipped."
       }
     },
@@ -366,19 +404,32 @@ export const useTradeguardStore = defineStore("tradeguard", {
       return JSON.stringify(this.buildPersistedState(), null, 2)
     },
     importSessionData(payload: unknown): boolean {
-      const parsed = payload as Partial<PersistedState>
-      if (typeof parsed.symbol === "string" && parsed.symbol.trim()) this.symbol = parsed.symbol
-      if (typeof parsed.accountBalance === "number") this.accountBalance = parsed.accountBalance
-      if (typeof parsed.leverage === "number") this.leverage = parsed.leverage
-      if (parsed.riskMode === "fixed" || parsed.riskMode === "percent") this.riskMode = parsed.riskMode
-      if (typeof parsed.riskValue === "number") this.riskValue = parsed.riskValue
-      if (parsed.direction === "long" || parsed.direction === "short") this.direction = parsed.direction
-      if (typeof parsed.entryPrice === "number") this.entryPrice = parsed.entryPrice
-      if (typeof parsed.stopLoss === "number") this.stopLoss = parsed.stopLoss
-      if (Array.isArray(parsed.targetRatios)) this.targetRatios = parsed.targetRatios
-      if (Array.isArray(parsed.tradeLog)) this.tradeLog = parsed.tradeLog
-      this.parserMessage = "Session imported successfully."
-      return true
+      try {
+        const result = PersistedStateSchema.safeParse(payload)
+        if (result.success) {
+          const data = result.data
+          this.symbol = data.symbol
+          this.accountBalance = data.accountBalance
+          this.leverage = data.leverage
+          this.riskMode = data.riskMode
+          this.riskValue = data.riskValue
+          this.direction = data.direction
+          this.entryPrice = data.entryPrice
+          this.stopLoss = data.stopLoss
+          this.targetRatios = data.targetRatios
+          this.tradeLog = data.tradeLog
+          this.parserMessage = "Session imported successfully."
+          return true
+        } else {
+          this.parserMessage = "Import failed: Invalid session file format."
+          console.error("Import validation error:", result.error)
+          return false
+        }
+      } catch (e) {
+        this.parserMessage = "Import failed: Malformed file."
+        console.error("Import error:", e)
+        return false
+      }
     },
   },
 })
