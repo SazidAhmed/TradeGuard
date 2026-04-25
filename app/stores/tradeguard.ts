@@ -278,6 +278,12 @@ export const useTradeguardStore = defineStore("tradeguard", {
         outcome: "Open",
       }
       this.tradeLog.unshift(entry)
+      
+      // Clear specific fields for the next execution
+      this.symbol = ""
+      this.entryPrice = ""
+      this.stopLoss = ""
+      this.signalText = ""
     },
     setOutcome(id: number, outcome: TradeOutcome) {
       const item = this.tradeLog.find(trade => trade.id === id)
@@ -322,12 +328,7 @@ export const useTradeguardStore = defineStore("tradeguard", {
     resetCalculator() {
       this.entryPrice = ""
       this.stopLoss = ""
-      this.accountBalance = ""
-      this.leverage = 1
-      this.riskMode = "fixed"
-      this.riskValue = ""
       this.direction = "long"
-      this.targetRatios = [1, 2, 3]
       this.signalText = ""
       this.parserMessage = "Calculator reset to defaults."
       this.symbol = ""
@@ -342,13 +343,13 @@ export const useTradeguardStore = defineStore("tradeguard", {
     buildPersistedState(): PersistedState {
       return {
         symbol: this.symbol,
-        accountBalance: Number(this.accountBalance),
+        accountBalance: this.accountBalance === "" ? "" : Number(this.accountBalance),
         leverage: Number(this.leverage),
         riskMode: this.riskMode,
-        riskValue: Number(this.riskValue),
+        riskValue: this.riskValue === "" ? "" : Number(this.riskValue),
         direction: this.direction,
-        entryPrice: Number(this.entryPrice),
-        stopLoss: Number(this.stopLoss),
+        entryPrice: this.entryPrice === "" ? "" : Number(this.entryPrice),
+        stopLoss: this.stopLoss === "" ? "" : Number(this.stopLoss),
         targetRatios: this.targetRatios,
         tradeLog: this.tradeLog,
       }
@@ -368,13 +369,13 @@ export const useTradeguardStore = defineStore("tradeguard", {
         if (result.success) {
           const data = result.data
           this.symbol = data.symbol
-          this.accountBalance = data.accountBalance
+          this.accountBalance = data.accountBalance === 0 ? "" : data.accountBalance
           this.leverage = data.leverage
           this.riskMode = data.riskMode
-          this.riskValue = data.riskValue
+          this.riskValue = data.riskValue === 0 ? "" : data.riskValue
           this.direction = data.direction
-          this.entryPrice = data.entryPrice
-          this.stopLoss = data.stopLoss
+          this.entryPrice = data.entryPrice === 0 ? "" : data.entryPrice
+          this.stopLoss = data.stopLoss === 0 ? "" : data.stopLoss
           this.targetRatios = data.targetRatios
           
           // Data Migration for TradeLog targets (Old format was number[], new is {multiple, price}[])

@@ -355,7 +355,7 @@ const logTrade = () => {
                   <input v-model.number="leverage" type="range" min="1" max="100" class="relative z-10 w-full accent-indigo-600 cursor-pointer bg-transparent appearance-none" />
                 </div>
                 <div class="flex gap-1">
-                  <button v-for="val in [1, 5, 10, 20, 50, 100]" :key="val" class="flex-1 rounded-lg border border-input bg-muted/20 py-1 text-[10px] font-bold text-muted-foreground transition-all hover:bg-indigo-600 hover:text-white" :class="{ 'bg-indigo-600 text-white border-indigo-600 shadow-sm': leverage === val }" @click="leverage = val">{{ val }}x</button>
+                  <button v-for="val in [1, 5, 10, 20, 50, 100]" :key="val" class="flex-1 rounded-lg border py-1 text-[10px] font-bold transition-all hover:bg-indigo-600 hover:text-white hover:border-indigo-600" :class="leverage === val ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm' : 'bg-muted/20 text-muted-foreground border-input'" @click="leverage = val">{{ val }}x</button>
                 </div>
               </div>
             </div>
