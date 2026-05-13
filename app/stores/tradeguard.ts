@@ -78,6 +78,24 @@ export const useTradeguardStore = defineStore("tradeguard", {
       return this.riskMode === "percent" ? baseBalance * (userRisk / 100) : userRisk
     },
     riskPerUnit: (state) => Math.abs(Number(state.entryPrice) - Number(state.stopLoss)),
+    inputErrors(): Record<string, string> {
+      const errors: Record<string, string> = {}
+      
+      const ep = Number(this.entryPrice)
+      if (this.entryPrice !== "" && (Number.isNaN(ep) || ep <= 0)) errors.entryPrice = "Must be > 0"
+
+      const sl = Number(this.stopLoss)
+      if (this.stopLoss !== "" && (Number.isNaN(sl) || sl <= 0)) errors.stopLoss = "Must be > 0"
+      else if (ep > 0 && sl > 0 && ep === sl) errors.stopLoss = "Cannot equal entry"
+
+      const bal = Number(this.accountBalance)
+      if (this.accountBalance !== "" && (Number.isNaN(bal) || bal <= 0)) errors.accountBalance = "Must be > 0"
+
+      const rsk = Number(this.riskValue)
+      if (this.riskValue !== "" && (Number.isNaN(rsk) || rsk <= 0)) errors.riskValue = "Must be > 0"
+
+      return errors
+    },
     hasInvalidInputs(): boolean {
       return Number(this.entryPrice) <= 0
         || Number(this.stopLoss) <= 0
