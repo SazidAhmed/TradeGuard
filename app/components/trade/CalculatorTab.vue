@@ -109,8 +109,10 @@ const logTrade = () => {
 </script>
 
 <template>
-  <section class="space-y-3 p-4">
-    <!-- Results & Risk Row -->
+  <section class="p-4 md:grid md:grid-cols-2 md:gap-6 items-stretch space-y-3 md:space-y-0">
+    <!-- Left Column -->
+    <div class="flex flex-col space-y-3">
+      <!-- Results & Risk Row -->
     <Transition
       enter-active-class="transition-all duration-500 ease-out"
       enter-from-class="opacity-0 -translate-y-4 scale-95"
@@ -288,10 +290,10 @@ const logTrade = () => {
       </Transition>
     </Teleport>
 
-    <!-- Input Form -->
-    <Card class="overflow-hidden shadow-sm border-indigo-100 dark:border-indigo-900/50">
-      <CardContent class="p-4 space-y-4">
-        <div class="rounded-xl border bg-muted/10 p-3 space-y-3">
+    <!-- Trade Setup -->
+    <Card class="overflow-hidden shadow-sm border-indigo-100 dark:border-indigo-900/50 flex flex-col flex-1">
+      <CardContent class="p-4 md:p-6 flex flex-col flex-1">
+        <div class="rounded-xl border bg-muted/10 p-3 md:p-5 space-y-3 md:space-y-4 h-full flex flex-col justify-center">
           <h3 class="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
             <Target class="h-3.5 w-3.5 text-indigo-500" /> Trade Setup
           </h3>
@@ -338,10 +340,17 @@ const logTrade = () => {
             </div>
           </div>
         </div>
+      </CardContent>
+    </Card>
+    </div>
 
-        <div class="rounded-xl border bg-muted/10 p-3 space-y-3">
-          <h3 class="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-            <ShieldAlert class="h-3.5 w-3.5 text-indigo-500" /> Risk Config
+    <!-- Right Column: Risk & Output Config -->
+    <div class="flex flex-col space-y-3 h-full">
+      <Card class="overflow-hidden shadow-sm border-indigo-100 dark:border-indigo-900/50 flex flex-col h-full flex-1">
+        <CardContent class="p-4 md:p-6 flex flex-col space-y-4 md:space-y-6 h-full flex-1">
+          <div class="rounded-xl border bg-muted/10 p-3 md:p-5 space-y-3 md:space-y-4">
+            <h3 class="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+              <ShieldAlert class="h-3.5 w-3.5 text-indigo-500" /> Risk Config
           </h3>
           <div class="grid grid-cols-2 gap-3">
             <div>
@@ -376,7 +385,7 @@ const logTrade = () => {
           </div>
         </div>
 
-        <div class="rounded-xl border bg-muted/10 p-3 space-y-3">
+        <div class="rounded-xl border bg-muted/10 p-3 md:p-5 space-y-3 md:space-y-4 flex flex-col flex-1">
           <h3 class="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
             <Target class="h-3.5 w-3.5 text-indigo-500" /> Output Config
           </h3>
@@ -420,17 +429,21 @@ const logTrade = () => {
                 <Clipboard class="h-5 w-5 animate-bounce" />
               </div>
             </Button>
-          </div>
-          <Button :disabled="hasInvalidInputs || hasInsufficientMargin" class="relative w-full h-14 text-lg font-black bg-gradient-to-r from-indigo-600 via-violet-600 to-indigo-600 bg-[length:200%_auto] text-white hover:bg-right transition-all duration-500 border-0 shadow-xl shadow-indigo-500/20 overflow-hidden group disabled:opacity-50 disabled:shadow-none active:scale-[0.98]" @click="logTrade()">
-            <div class="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent group-hover:animate-[shimmer_1s_infinite]"></div>
-            <div class="relative z-10 flex items-center justify-center gap-2">
-              <Plus class="h-6 w-6 transition-transform group-hover:rotate-180 duration-500" />
-              <span>LOG EXECUTION</span>
             </div>
-            <div class="absolute inset-0 opacity-0 group-active:opacity-20 bg-white transition-opacity duration-300"></div>
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
+            
+            <div class="flex-1 hidden md:block"></div>
+            
+            <Button :disabled="hasInvalidInputs || hasInsufficientMargin" class="relative w-full h-14 text-lg font-black bg-gradient-to-r from-indigo-600 via-violet-600 to-indigo-600 bg-[length:200%_auto] text-white hover:bg-right transition-all duration-500 border-0 shadow-xl shadow-indigo-500/20 overflow-hidden group disabled:opacity-50 disabled:shadow-none active:scale-[0.98] mt-auto" @click="logTrade()">
+              <div class="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent group-hover:animate-[shimmer_1s_infinite]"></div>
+              <div class="relative z-10 flex items-center justify-center gap-2">
+                <Plus class="h-6 w-6 transition-transform group-hover:rotate-180 duration-500" />
+                <span>LOG EXECUTION</span>
+              </div>
+              <div class="absolute inset-0 opacity-0 group-active:opacity-20 bg-white transition-opacity duration-300"></div>
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   </section>
 </template>

@@ -91,16 +91,16 @@ const importSession = async (event: Event) => {
   }
 };
 
-const showClearConfirm = ref<'trades' | 'all' | null>(null);
+const showClearConfirm = ref<"trades" | "all" | null>(null);
 
-const confirmClearAll = (type: 'trades' | 'all') => {
+const confirmClearAll = (type: "trades" | "all") => {
   showClearConfirm.value = type;
 };
 
 const executeClearAll = () => {
-  if (showClearConfirm.value === 'all') {
+  if (showClearConfirm.value === "all") {
     store.clearAllData();
-  } else if (showClearConfirm.value === 'trades') {
+  } else if (showClearConfirm.value === "trades") {
     store.clearTradeLog();
   }
   showClearConfirm.value = null;
@@ -120,7 +120,9 @@ watchDebounced(
 <template>
   <div
     class="relative min-h-screen font-sans transition-colors duration-500"
-    :class="isDark ? 'dark bg-[#0a0a0c] text-slate-100' : 'bg-slate-50 text-slate-900'"
+    :class="
+      isDark ? 'dark bg-[#0a0a0c] text-slate-100' : 'bg-slate-50 text-slate-900'
+    "
   >
     <!-- Hidden File Input for Import -->
     <input
@@ -137,44 +139,71 @@ watchDebounced(
       class="mx-auto flex h-screen w-full flex-col overflow-y-auto overflow-x-hidden scrollbar-hide md:max-w-6xl md:px-6"
     >
       <!-- Pull-to-refresh Visual -->
-      <div 
+      <div
         class="flex flex-col items-center justify-center transition-all duration-300 pointer-events-none"
-        :style="{ height: isRefreshing ? '80px' : '0px', opacity: isRefreshing ? 1 : 0 }"
+        :style="{
+          height: isRefreshing ? '80px' : '0px',
+          opacity: isRefreshing ? 1 : 0,
+        }"
       >
-        <div class="h-10 w-10 rounded-full bg-indigo-600 flex items-center justify-center text-white shadow-lg animate-spin">
+        <div
+          class="h-10 w-10 rounded-full bg-indigo-600 flex items-center justify-center text-white shadow-lg animate-spin"
+        >
           <Zap class="h-5 w-5" />
         </div>
-        <span class="text-[10px] font-black uppercase tracking-widest mt-2 text-indigo-600">Refreshing...</span>
+        <span
+          class="text-[10px] font-black uppercase tracking-widest mt-2 text-indigo-600"
+          >Refreshing...</span
+        >
       </div>
 
       <!-- HEADER -->
       <header
         class="sticky top-0 z-50 p-4 pb-2 transition-all duration-300 border-b border-transparent"
-        :class="scrollY > 20 ? 'bg-background/80 backdrop-blur-xl border-border/50 shadow-sm' : 'bg-transparent'"
+        :class="
+          scrollY > 20
+            ? 'bg-background/80 backdrop-blur-xl border-border/50 shadow-sm'
+            : 'bg-transparent'
+        "
       >
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-3">
-            <div class="flex h-10 w-10 items-center justify-center rounded-2xl bg-indigo-600 text-white shadow-lg shadow-indigo-500/30">
+            <div
+              class="flex h-10 w-10 items-center justify-center rounded-2xl bg-indigo-600 text-white shadow-lg shadow-indigo-500/30"
+            >
               <Zap class="h-6 w-6" />
             </div>
             <div>
-              <h1 class="text-xl font-black tracking-tight uppercase md:text-2xl">
+              <h1
+                class="text-xl font-black tracking-tight uppercase md:text-2xl"
+              >
                 Trade<span class="text-indigo-600">Guard</span>
               </h1>
               <div class="flex items-center gap-1.5">
-                <span class="flex h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                <span class="text-[10px] font-black text-muted-foreground uppercase tracking-widest">System Online</span>
+                <span
+                  class="flex h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"
+                ></span>
+                <span
+                  class="text-[10px] font-black text-muted-foreground uppercase tracking-widest"
+                  >System Online</span
+                >
               </div>
             </div>
           </div>
 
           <!-- Desktop Navigation -->
-          <div class="hidden md:flex items-center gap-4 bg-muted/30 p-1.5 rounded-2xl border border-border/50">
+          <div
+            class="hidden md:flex items-center gap-4 bg-muted/30 p-1.5 rounded-2xl border border-border/50"
+          >
             <button
-              v-for="tab in (['calculator', 'trades', 'stats'] as const)"
+              v-for="tab in ['calculator', 'trades', 'stats'] as const"
               :key="tab"
               class="px-5 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-300"
-              :class="activeTab === tab ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30' : 'text-muted-foreground hover:text-foreground'"
+              :class="
+                activeTab === tab
+                  ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30'
+                  : 'text-muted-foreground hover:text-foreground'
+              "
               @click="activeTab = tab"
             >
               {{ tab }}
@@ -211,76 +240,92 @@ watchDebounced(
         >
           <div
             v-if="scrollY <= 50"
-            class="mt-3 flex items-center justify-between text-xs text-muted-foreground overflow-hidden md:hidden"
+            class="mt-3 flex items-center justify-between text-xs text-muted-foreground overflow-hidden"
           >
-            <span>Balance: <strong :class="currentBalance >= accountBalance ? 'text-emerald-600' : 'text-gray-900 dark:text-white'">{{ formatCompactMoney(currentBalance) }}</strong></span>
-            <span>Trades: <strong class="text-gray-900 dark:text-white">{{ tradeLog.length }}/100</strong></span>
-            <span>Survival: <strong class="text-indigo-600">{{ survivalLossesRemaining }}</strong></span>
+            <span
+              >Balance:
+              <strong
+                :class="
+                  currentBalance >= accountBalance
+                    ? 'text-emerald-600'
+                    : 'text-gray-900 dark:text-white'
+                "
+                >{{ formatCompactMoney(currentBalance) }}</strong
+              ></span
+            >
+            <span
+              >Trades:
+              <strong class="text-gray-900 dark:text-white"
+                >{{ tradeLog.length }}/100</strong
+              ></span
+            >
+            <span
+              >Survival:
+              <strong class="text-indigo-600">{{
+                survivalLossesRemaining
+              }}</strong></span
+            >
           </div>
         </Transition>
       </header>
 
       <!-- Tab Content Area / Dashboard Grid -->
       <main class="flex-1 pb-32 pt-2">
-        <!-- Desktop Grid View -->
-        <div class="hidden md:grid grid-cols-12 gap-6 items-start">
-          <!-- Left Column: Calculator -->
-          <div class="col-span-5 sticky top-24">
-            <h2 class="px-4 mb-4 text-xs font-black uppercase tracking-[0.2em] text-indigo-600/60 flex items-center gap-2">
-              <Calculator class="h-4 w-4" /> Position Calculator
-            </h2>
-            <CalculatorTab :show-toast="showToast" />
-          </div>
-
-          <!-- Right Column: Dashboard & Trades -->
-          <div class="col-span-7 space-y-8">
-            <div>
-              <h2 class="px-4 mb-4 text-xs font-black uppercase tracking-[0.2em] text-indigo-600/60 flex items-center gap-2">
-                <BarChart3 class="h-4 w-4" /> Performance Metrics
+        <!-- Unified Tab View -->
+        <div class="w-full max-w-5xl mx-auto">
+          <Transition name="fade-slide" mode="out-in">
+            <div key="calculator" v-if="activeTab === 'calculator'">
+              <h2
+                class="hidden md:flex px-4 mb-4 text-xs font-black uppercase tracking-[0.2em] text-indigo-600/60 items-center gap-2"
+              >
+                <Calculator class="h-4 w-4" /> Position Calculator
               </h2>
-              <StatsTab />
+              <CalculatorTab :show-toast="showToast" />
             </div>
-            <div>
-              <div class="flex items-center justify-between px-4 mb-4">
-                <h2 class="text-xs font-black uppercase tracking-[0.2em] text-indigo-600/60 flex items-center gap-2">
+
+            <div key="trades" v-else-if="activeTab === 'trades'">
+              <div
+                class="hidden md:flex items-center justify-between px-4 mb-4"
+              >
+                <h2
+                  class="text-xs font-black uppercase tracking-[0.2em] text-indigo-600/60 flex items-center gap-2"
+                >
                   <List class="h-4 w-4" /> Recent Executions
                 </h2>
-                <Button variant="link" size="sm" class="text-[10px] font-black uppercase tracking-widest p-0 h-auto" @click="activeTab = 'trades'">
-                  Manage All
-                </Button>
               </div>
-              <TradesTab 
-                :show-toast="showToast" 
+              <TradesTab
+                :show-toast="showToast"
                 :open-import-dialog="openImportSessionDialog"
                 @clear-trades="confirmClearAll('trades')"
               />
             </div>
-          </div>
-        </div>
 
-        <!-- Mobile Tab View -->
-        <div class="md:hidden">
-          <Transition name="fade-slide" mode="out-in">
-            <CalculatorTab v-if="activeTab === 'calculator'" :show-toast="showToast" />
-            <TradesTab 
-              v-else-if="activeTab === 'trades'" 
-              :show-toast="showToast" 
-              :open-import-dialog="openImportSessionDialog"
-              @clear-trades="confirmClearAll('trades')"
-            />
-            <StatsTab v-else-if="activeTab === 'stats'" />
+            <div key="stats" v-else-if="activeTab === 'stats'">
+              <h2
+                class="hidden md:flex px-4 mb-4 text-xs font-black uppercase tracking-[0.2em] text-indigo-600/60 items-center gap-2"
+              >
+                <BarChart3 class="h-4 w-4" /> Performance Metrics
+              </h2>
+              <StatsTab />
+            </div>
           </Transition>
         </div>
       </main>
 
       <!-- BOTTOM NAVIGATION (Mobile Only) -->
       <nav class="md:hidden fixed inset-x-0 bottom-0 z-40 mx-auto max-w-md p-4">
-        <div class="flex h-18 items-center justify-around rounded-[24px] bg-background/80 border border-indigo-100 dark:border-indigo-900/40 backdrop-blur-2xl shadow-[0_20px_50px_-12px_rgba(0,0,0,0.5)] dark:shadow-[0_20px_50px_-12px_rgba(0,0,0,0.8)] px-2">
+        <div
+          class="flex h-18 items-center justify-around rounded-[24px] bg-background/80 border border-indigo-100 dark:border-indigo-900/40 backdrop-blur-2xl shadow-[0_20px_50px_-12px_rgba(0,0,0,0.5)] dark:shadow-[0_20px_50px_-12px_rgba(0,0,0,0.8)] px-2"
+        >
           <button
-            v-for="tab in (['calculator', 'trades', 'stats'] as const)"
+            v-for="tab in ['calculator', 'trades', 'stats'] as const"
             :key="tab"
             class="relative flex flex-1 flex-col items-center justify-center gap-1 transition-all duration-300 h-16"
-            :class="activeTab === tab ? 'text-indigo-600 scale-110' : 'text-muted-foreground hover:text-indigo-500'"
+            :class="
+              activeTab === tab
+                ? 'text-indigo-600 scale-110'
+                : 'text-muted-foreground hover:text-indigo-500'
+            "
             @click="activeTab = tab"
           >
             <!-- Active Indicator Pill -->
@@ -288,14 +333,22 @@ watchDebounced(
               v-if="activeTab === tab"
               class="absolute inset-x-2 -inset-y-1 rounded-2xl bg-indigo-50 dark:bg-indigo-900/30 -z-10 animate-in fade-in zoom-in-90 duration-300"
             ></div>
-            
+
             <component
-              :is="tab === 'calculator' ? Calculator : tab === 'trades' ? List : BarChart3"
+              :is="
+                tab === 'calculator'
+                  ? Calculator
+                  : tab === 'trades'
+                    ? List
+                    : BarChart3
+              "
               class="h-5 w-5"
               :class="activeTab === tab ? 'animate-bounce-short' : ''"
             />
-            <span class="text-[9px] font-black uppercase tracking-widest">{{ tab }}</span>
-            
+            <span class="text-[9px] font-black uppercase tracking-widest">{{
+              tab
+            }}</span>
+
             <!-- Tab Badge (for trades) -->
             <div
               v-if="tab === 'trades' && tradeLog.length > 0"
@@ -303,7 +356,7 @@ watchDebounced(
             >
               {{ tradeLog.length }}
             </div>
-            
+
             <!-- Dot Indicator -->
             <div
               v-if="activeTab === tab"
@@ -316,33 +369,59 @@ watchDebounced(
       <!-- Global Toast Notification -->
       <div
         class="fixed bottom-24 left-1/2 z-[100] flex -translate-x-1/2 transform items-center gap-3 rounded-2xl bg-gray-950/90 dark:bg-indigo-950/90 px-5 py-3 text-sm font-bold text-white shadow-2xl backdrop-blur-xl border border-white/10 transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)]"
-        :class="copyMessage ? 'translate-y-0 opacity-100 scale-100' : 'translate-y-12 opacity-0 scale-90 pointer-events-none'"
+        :class="
+          copyMessage
+            ? 'translate-y-0 opacity-100 scale-100'
+            : 'translate-y-12 opacity-0 scale-90 pointer-events-none'
+        "
       >
-        <div class="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500 shadow-lg shadow-emerald-500/40">
+        <div
+          class="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500 shadow-lg shadow-emerald-500/40"
+        >
           <Zap class="h-3.5 w-3.5 text-white" />
         </div>
         <span>{{ copyMessage }}</span>
       </div>
-      
+
       <!-- Modals -->
       <Transition name="fade-slide">
-        <div v-if="showClearConfirm !== null" class="fixed inset-0 z-[100] flex items-center justify-center bg-background/80 backdrop-blur-sm p-4">
-          <div class="w-full max-w-xs rounded-2xl border border-indigo-100 dark:border-indigo-900/50 bg-card p-5 shadow-xl">
-            <div class="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/20">
+        <div
+          v-if="showClearConfirm !== null"
+          class="fixed inset-0 z-[100] flex items-center justify-center bg-background/80 backdrop-blur-sm p-4"
+        >
+          <div
+            class="w-full max-w-xs rounded-2xl border border-indigo-100 dark:border-indigo-900/50 bg-card p-5 shadow-xl"
+          >
+            <div
+              class="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/20"
+            >
               <TriangleAlert class="h-6 w-6 text-red-600 dark:text-red-400" />
             </div>
             <h3 class="mb-2 text-center text-lg font-bold">Are you sure?</h3>
             <p class="mb-5 text-center text-sm text-muted-foreground">
-              {{ showClearConfirm === 'all' ? 'This will permanently clear ALL app data and reset the calculator.' : 'This will permanently clear your entire trade log and reset stats.' }}
+              {{
+                showClearConfirm === "all"
+                  ? "This will permanently clear ALL app data and reset the calculator."
+                  : "This will permanently clear your entire trade log and reset stats."
+              }}
             </p>
             <div class="flex gap-2">
-              <Button variant="outline" class="flex-1" @click="showClearConfirm = null">Cancel</Button>
-              <Button variant="destructive" class="flex-1" @click="executeClearAll()">Delete</Button>
+              <Button
+                variant="outline"
+                class="flex-1"
+                @click="showClearConfirm = null"
+                >Cancel</Button
+              >
+              <Button
+                variant="destructive"
+                class="flex-1"
+                @click="executeClearAll()"
+                >Delete</Button
+              >
             </div>
           </div>
         </div>
       </Transition>
-
     </div>
   </div>
 </template>
@@ -390,18 +469,32 @@ watchDebounced(
 }
 
 @keyframes success-bounce {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.05); }
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
 }
 
 @keyframes shimmer {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(100%); }
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
 }
 
 @keyframes bounce-short {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-3px); }
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
 }
 
 .animate-bounce-short {
@@ -423,9 +516,19 @@ watchDebounced(
   }
 }
 
-.stagger-1 { animation-delay: 0.1s; }
-.stagger-2 { animation-delay: 0.2s; }
-.stagger-3 { animation-delay: 0.3s; }
-.stagger-4 { animation-delay: 0.4s; }
-.stagger-5 { animation-delay: 0.5s; }
+.stagger-1 {
+  animation-delay: 0.1s;
+}
+.stagger-2 {
+  animation-delay: 0.2s;
+}
+.stagger-3 {
+  animation-delay: 0.3s;
+}
+.stagger-4 {
+  animation-delay: 0.4s;
+}
+.stagger-5 {
+  animation-delay: 0.5s;
+}
 </style>
